@@ -9,8 +9,9 @@ import { extension_settings } from '../../../extensions.js';
 import { selected_group } from '../../../group-chats.js';
 import { t } from '../../../i18n.js';
 
-const MODULE = 'typing_indicator';
+const MODULE = 'Lore_Tips';
 const legacyIndicatorTemplate = document.getElementById('typing_indicator_template');
+const userinputField = document.getelementById(`send_textarea`);
 
 /**
  * @typedef {Object} TypingIndicatorSettings
@@ -23,7 +24,11 @@ const legacyIndicatorTemplate = document.getElementById('typing_indicator_templa
  */
 const defaultSettings = {
     enabled: false,
-    streaming: false,
+    delay : 200,
+    viewkey: 69,
+    cycleUp: 38,
+    cycleDown: 40,
+    SelectLT: 9
 };
 
 /**
@@ -51,7 +56,7 @@ function getSettings() {
  * @returns {void}
  */
 function addExtensionSettings(settings) {
-    const settingsContainer = document.getElementById('typing_indicator_container') ?? document.getElementById('extensions_settings');
+    const settingsContainer = document.getElementById('loretips_container') ?? document.getElementById('extensions_settings');
     if (!settingsContainer) {
         return;
     }
@@ -64,7 +69,7 @@ function addExtensionSettings(settings) {
     inlineDrawerToggle.classList.add('inline-drawer-toggle', 'inline-drawer-header');
 
     const extensionName = document.createElement('b');
-    extensionName.textContent = t`Typing Indicator`;
+    extensionName.textContent = t`Lore Tips`;
 
     const inlineDrawerIcon = document.createElement('div');
     inlineDrawerIcon.classList.add('inline-drawer-icon', 'fa-solid', 'fa-circle-chevron-down', 'down');
@@ -81,7 +86,7 @@ function addExtensionSettings(settings) {
     enabledCheckboxLabel.classList.add('checkbox_label');
     enabledCheckboxLabel.htmlFor = 'typingIndicatorEnabled';
     const enabledCheckbox = document.createElement('input');
-    enabledCheckbox.id = 'typingIndicatorEnabled';
+    enabledCheckbox.id = 'lootTipEnabled';
     enabledCheckbox.type = 'checkbox';
     enabledCheckbox.checked = settings.enabled;
     enabledCheckbox.addEventListener('change', () => {
