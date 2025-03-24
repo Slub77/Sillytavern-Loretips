@@ -182,6 +182,12 @@ function hideTypingIndicator() {
     }
 }
 
+async function PrintWorldInfo() {
+const entriesGroupByWorldName = await getActiveWorldInfo(['all'], this_chid);
+
+    console.log(entriesGroupByWorldName)
+}
+
 (function () {
     const settings = getSettings();
     addExtensionSettings(settings);
@@ -195,6 +201,8 @@ function hideTypingIndicator() {
         event_types.GENERATION_ENDED,
         event_types.CHAT_CHANGED,
     ];
+
+    PrintWorldInfo()
 
     showIndicatorEvents.forEach(e => eventSource.on(e, showTypingIndicator));
     hideIndicatorEvents.forEach(e => eventSource.on(e, hideTypingIndicator));
