@@ -102,6 +102,18 @@ function addExtensionSettings(settings) {
     enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
     inlineDrawerContent.append(enabledCheckboxLabel);
 
+
+    //Sam Button
+    const TriggerLoreDump = document.createElement(`button`);
+        TriggerLoreDump.addEventListener('click', () => {
+    console.log("Sam Button!");
+             PrintWorldInfo();
+    });
+    
+inlineDrawerContent.append(TriggerLoreDump);
+
+   
+
     // Show if streaming
     const showIfStreamingCheckboxLabel = document.createElement('label');
     showIfStreamingCheckboxLabel.classList.add('checkbox_label');
