@@ -5,9 +5,9 @@ import {
     isStreamingEnabled,
     saveSettingsDebounced,
 } from '../../../../script.js';
-import {
-  getActiveWorldInfo,
-} from 'sillytavern-utils-lib';
+//import {
+//  getActiveWorldInfo,
+//} from 'sillytavern-utils-lib';
 
 import { extension_settings } from '../../../extensions.js';
 import { selected_group } from '../../../group-chats.js';
