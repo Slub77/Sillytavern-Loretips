@@ -11,7 +11,7 @@ import { t } from '../../../i18n.js';
 
 const MODULE = 'Lore_Tips';
 const legacyIndicatorTemplate = document.getElementById('typing_indicator_template');
-const userinputField = document.getelementById(`send_textarea`);
+const userinputField = document.getElementById(`send_textarea`);
 
 /**
  * @typedef {Object} TypingIndicatorSettings
