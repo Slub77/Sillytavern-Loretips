@@ -374,7 +374,7 @@ function AttachLoreMonitor() {
     });
 
     UserChatBox.addEventListener('blur', function() {
-        hideTooltips();
+        //hideTooltips();
         console.log("Slub: DeFocus")
         currentWord = ''; // Reset current word on blur
     });
@@ -384,7 +384,7 @@ function AttachLoreMonitor() {
 
     UserChatBox.addEventListener('keydown', function(event) {
         if (event.key === ' ' || event.key === 'Spacebar') { // Handle space key to hide tooltip
-            hideTooltips();
+            //hideTooltips();
             console.log("Slub: New Word")
             currentWord = ''; // Reset current word on space
         } else if (event.ctrlKey && (event.key === 'ArrowDown' || event.key === 'Down')) {
@@ -439,11 +439,44 @@ function AttachLoreMonitor() {
                     resetHighlight(); // Reset highlight when list updates due to cursor move
                 }
             } else {
-                hideTooltips(); // Hide if no word under cursor
+                //hideTooltips(); // Hide if no word under cursor
                 currentWord = '';
             }
         }
     }
+
+    function positionLoreTips() {
+    const textarea = document.getElementById('send_textarea');
+    const loreTipsDiv = document.getElementById('LoreTips');
+
+    if (!textarea || !loreTipsDiv) {
+        return; // Exit if elements not found
+    }
+
+    const textareaRect = textarea.getBoundingClientRect();
+
+    // Position LoreTips 80px above the textarea and same left alignment
+    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - 80) + 'px'; // Add scrollY for absolute positioning in document
+    loreTipsDiv.style.left = textareaRect.left + 'px';
+
+    // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
+    loreTipsDiv.style.width = textarea.offsetWidth + 'px';
+
+    // Set z-index for LoreTips to be higher than textarea
+    const textareaZIndex = window.getComputedStyle(textarea).zIndex;
+    let loreTipsZIndexValue = 1; // Default z-index for LoreTips
+
+    if (textareaZIndex && textareaZIndex !== 'auto') {
+        loreTipsZIndexValue = parseInt(textareaZIndex, 10) + 1;
+    } else {
+        loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
+    }
+    loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
+}
+
+// Call positionLoreTips initially and on window resize (and potentially on scroll if layout is affected)
+positionLoreTips();
+window.addEventListener('resize', positionLoreTips);
 
 
     // --- Initial setup for LoreTips width ---
