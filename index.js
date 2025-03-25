@@ -165,7 +165,7 @@ function GenerateLoreTip() {
             position: absolute;
             border: 1px solid #ccc;
             background-color: var(--SmartThemeBlurTintColor);
-            max-height: ${settings.rowstoshow * 40}px;
+            max-height: ${settings.rowstoshow * 30}px;
             overflow-y: auto;
             max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
@@ -182,6 +182,7 @@ function GenerateLoreTip() {
         }
         #LoreTips td {
             border: 0px solid;
+            max-height:30px;
             padding: calc(var(--mainFontSize)* 1);
             text-align: left;
             word-break: break-word; /* Ensure long words wrap */
@@ -452,10 +453,14 @@ function AttachLoreMonitor() {
         return; // Exit if elements not found
     }
 
+    const settings = getSettings();
+
+  
+
     const textareaRect = textarea.getBoundingClientRect();
 
     // Position LoreTips 80px above the textarea and same left alignment
-    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - 80) + 'px'; // Add scrollY for absolute positioning in document
+    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (settings.rowstoshow * 30) - 50) + 'px'; // Add scrollY for absolute positioning in document
     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
