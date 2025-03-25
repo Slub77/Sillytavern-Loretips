@@ -185,13 +185,21 @@ function GenerateLoreTip() {
             padding: calc(var(--mainFontSize)* 1);
             text-align: left;
             word-break: break-word; /* Ensure long words wrap */
-            max-width: 50%; /* Limit width of each cell */
             overflow: hidden; /* Prevent content overflow */
             text-overflow: ellipsis; /* Indicate overflow with ellipsis */
             white-space: nowrap; /* Prevent line breaks in cells */
             color: var(--SmartThemeBodyColor);
             text-shadow: 0px 0px calc(var(--shadowWidth)* 1px) var(--SmartThemeChatTintColor) !important;
         }
+
+        #LoreTips td:nth-child(1)  {
+        width:100px;
+        }
+        #LoreTips td:nth-child(2)  {
+        width:100px;
+        }
+        
+        
         #loreTipsTableBody tr:hover {
             background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlight on hover */
         }
@@ -277,12 +285,12 @@ function AttachLoreMonitor() {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
                     if (lowerKey.includes(lowerWord)) {
-                        matches.push({ comment: entry.comment, triggers: entry.key });
+                        matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys to avoid duplicates from same entry
                     }
                 } else if (key instanceof RegExp) { // Handle regex keys (if any in future, currently not used for triggers)
                     if (key.test(word)) {
-                        matches.push({ comment: entry.comment, triggers: entry.key });
+                        matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys
                     }
                 }
@@ -305,9 +313,11 @@ function AttachLoreMonitor() {
                 const row = loreTipsTableBody.insertRow();
                 const commentCell = row.insertCell(0);
                 const triggersCell = row.insertCell(1);
+                const contentCell = row.insertCell(2);
 
                 commentCell.textContent = match.comment;
                 triggersCell.textContent = match.triggers.join(', ');
+                contentCell.textContent = match.content;
 
                 if (index === highlightedRowIndex) {
                     row.classList.add('highlighted'); // Highlight first row initially
