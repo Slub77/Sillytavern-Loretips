@@ -8,8 +8,8 @@ import {
 
 
 import {
-  getActiveWorldInfo,
-} from '../sillytavern-utils-lib/types/world-info';
+  getSortedEntries,
+} from '../../../world-info.js';
 
 import { extension_settings } from '../../../extensions.js';
 import { selected_group } from '../../../group-chats.js';
@@ -58,7 +58,7 @@ function getSettings() {
 
 
 async function PrintWorldInfo() {
-    const entriesGroupByWorldName = await getActiveWorldInfo(['all'], this_chid);
+    const entriesGroupByWorldName = await getSortedEntries();
     console.log(entriesGroupByWorldName)
 }
 
