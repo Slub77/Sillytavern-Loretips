@@ -174,7 +174,12 @@ function GenerateLoreTip() {
             overflow-y: auto;
             max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
-            opacity:0.8;
+            opacity:0.2;
+        }
+
+        #LoreTips:hover {
+            opacity:1;
+            
         }
         #LoreTips table {
             width: 100%;
@@ -193,10 +198,10 @@ function GenerateLoreTip() {
         }
 
         #LoreTips td:nth-child(1)  {
-        width:100px;
+            max-width: 200px;
         }
         #LoreTips td:nth-child(2)  {
-        width:100px;
+            max-width: 400px;
         }
         
         
