@@ -173,9 +173,9 @@ function GenerateLoreTip() {
             position: absolute;
             border: 1px solid #ccc;
             background-color: white;
-            max-height: 60px;
+            max-height: 90px;
             overflow-y: auto;
-            z-index: 10; /* Ensure it's above the textarea if needed */
+            z-index: 200; /* Ensure it's above the textarea if needed */
         }
         #LoreTips table {
             width: 100%;
@@ -446,7 +446,7 @@ function AttachLoreMonitor() {
     }
 
     function positionLoreTips() {
-    const textarea = document.getElementById('send_textarea');
+    const textarea = document.getElementById('form_sheld');
     const loreTipsDiv = document.getElementById('LoreTips');
 
     if (!textarea || !loreTipsDiv) {
@@ -472,20 +472,14 @@ function AttachLoreMonitor() {
         loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
     }
     loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
+
+         loreTipsDiv.style.width = textarea.offsetWidth + 'px';
 }
 
 // Call positionLoreTips initially and on window resize (and potentially on scroll if layout is affected)
 positionLoreTips();
 window.addEventListener('resize', positionLoreTips);
 
-
-    // --- Initial setup for LoreTips width ---
-    function setLoreTipsWidth() {
-        loreTipsDiv.style.width = UserChatBox.offsetWidth + 'px';
-    }
-
-    setLoreTipsWidth(); // Set initial width
-    window.addEventListener('resize', setLoreTipsWidth); // Adjust width on window resize
 
 }
 
