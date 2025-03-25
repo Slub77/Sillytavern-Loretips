@@ -349,9 +349,10 @@ function AttachLoreMonitor() {
                 }
             });
                     //Adjust Height based on total rows
+                    const textarea = document.getElementById('form_sheld');
                     const textareaRect = textarea.getBoundingClientRect();
                 
-                    let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length,settings.rowstoshow)
+                    let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length, settings.rowstoshow)
                 
                     // Position LoreTips 80px above the textarea and same left alignment
                     loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
