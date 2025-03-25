@@ -1,0 +1,25 @@
+<div id="LoreTips" style="display: none; position: absolute; border: 1px solid #ccc; background-color: white; max-height: 60px; overflow-y: auto; width: 0;">
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Comment</th>
+                <th>Triggers</th>
+            </tr>
+        </thead>
+        <tbody id="loreTipsTableBody">
+            </tbody>
+    </table>
+</div>
+<textarea id="send_textarea" style="width: 300px;"></textarea>
+
+<style>
+    #LoreTips {
+        z-index: 10; /* Ensure it's above the textarea if needed */
+    }
+    #loreTipsTableBody tr:hover {
+        background-color: #f0f0f0; /* Highlight on hover */
+    }
+    #loreTipsTableBody tr.highlighted {
+        background-color: #e0e0e0; /* Highlighted row */
+    }
+</style>
