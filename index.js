@@ -359,7 +359,7 @@ function AttachLoreMonitor() {
                     const textareaRect = textarea.getBoundingClientRect();
                     const settings = getSettings();
             
-                    let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length, settings.rowstoshow)
+                    let CalcNeededHeight = Math.min(matches.length, settings.rowstoshow)
                 
                     // Position LoreTips 80px above the textarea and same left alignment
                     loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
