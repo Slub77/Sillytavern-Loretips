@@ -237,7 +237,9 @@ function GenerateLoreTip() {
     loreTipsDiv.id = 'LoreTips';
 
     const loreTipsTable = document.createElement('table');
+    loreTipsTable.id = "loretableslub"
     loreTipsDiv.appendChild(loreTipsTable);
+    
 
     const tableHead = document.createElement('thead');
     loreTipsTable.appendChild(tableHead);
@@ -346,6 +348,15 @@ function AttachLoreMonitor() {
                     row.classList.add('highlighted'); // Highlight first row initially
                 }
             });
+                    //Adjust Height based on total rows
+                    const textareaRect = textarea.getBoundingClientRect();
+                
+                    let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length,settings.rowstoshow)
+                
+                    // Position LoreTips 80px above the textarea and same left alignment
+                    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
+                    loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
+            
         } else {
             hideTooltips(); // Hide if no matches
         }
@@ -481,8 +492,10 @@ function AttachLoreMonitor() {
 
     const textareaRect = textarea.getBoundingClientRect();
 
+    let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length,settings.rowstoshow)
+
     // Position LoreTips 80px above the textarea and same left alignment
-    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (settings.rowstoshow * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
+    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
