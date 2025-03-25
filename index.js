@@ -58,9 +58,11 @@ function getSettings() {
 
 
 async function PrintWorldInfo() {
-    const entriesGroupByWorldName = await getSortedEntries();
-    console.log(entriesGroupByWorldName)
+    CachedLore = await getSortedEntries();
+    console.log(CachedLore);
 }
+
+var CachedLore = []
 
 /**
  * Draws the settings for this extension.
