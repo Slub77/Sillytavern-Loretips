@@ -181,7 +181,7 @@ function GenerateLoreTip() {
             border-collapse: collapse; /* Optional: For cleaner table borders */
         }
         #LoreTips td {
-            border: 1px solid #ddd; /* Optional: Add borders to table cells */
+            border: 0px solid;
             padding: calc(var(--mainFontSize)* 1);
             text-align: left;
             word-break: break-word; /* Ensure long words wrap */
