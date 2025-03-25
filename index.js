@@ -69,6 +69,8 @@ function addExtensionSettings(settings) {
         return;
     }
 
+    
+
     const inlineDrawer = document.createElement('div');
     inlineDrawer.classList.add('inline-drawer');
     settingsContainer.append(inlineDrawer);
@@ -84,7 +86,7 @@ function addExtensionSettings(settings) {
 
     inlineDrawerToggle.append(extensionName, inlineDrawerIcon);
 
-    const inlineDrawerContent = document.createElement('div');
+    let inlineDrawerContent = document.createElement('div');
     inlineDrawerContent.classList.add('inline-drawer-content');
 
     inlineDrawer.append(inlineDrawerToggle, inlineDrawerContent);
@@ -107,6 +109,9 @@ function addExtensionSettings(settings) {
     enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
     inlineDrawerContent.append(enabledCheckboxLabel);
 
+    let inlineDrawerContent2 = document.createElement('div');
+    inlineDrawerContent2.classList.add('inline-drawer-content');
+
      //Refresh Lore Fail Safe  Button
     const ReBuuild = document.createElement(`input`);
     ReBuuild.type = 'button';
@@ -115,23 +120,32 @@ function addExtensionSettings(settings) {
             //console.log("Sam Button! Rebuild");
             ReBuildLore();
     });
-    inlineDrawerContent.append(ReBuuild);
+    inlineDrawerContent2.append(ReBuuild);
+    inlineDrawer.append(inlineDrawerContent2);
 
+     inlineDrawerContent2 = document.createElement('div');
+    inlineDrawerContent2.classList.add('inline-drawer-content');
     //Rows to Show
     const LoreRowsToShow = document.createElement(`input`);
     LoreRowsToShow.type = 'number';
-    LoreRowsToShow.placeholder  = "2";
+    LoreRowsToShow.value  = settings.rowstoshow;
     LoreRowsToShow.min  = 1;
     LoreRowsToShow.max  = 20;
     LoreRowsToShow.step  = 1;
     
     LoreRowsToShow.addEventListener('change', () => {
-           
-        settings.rowstoshow = LoreRowsToShow.value;
-        saveSettingsDebounced();
-        ReBuildLore();
+
+        if(!isNaN(LoreRowsToShow.value)) {
+            settings.rowstoshow = LoreRowsToShow.value;
+            saveSettingsDebounced();
+            ReBuildLore();
+        }
     });
-    inlineDrawerContent.append(LoreRowsToShow);
+    
+    inlineDrawerContent2.append(LoreRowsToShow);
+    inlineDrawer.append(inlineDrawerContent2);
+
+
     
 
     
