@@ -221,6 +221,10 @@ function GenerateLoreTip() {
         #LoreTips td:nth-child(2)  {
             max-width: 400px;
         }
+
+        #LoreTips.ctrl-pressed {
+        opacity: 1;
+        }
         
         
         #loreTipsTableBody tr:hover {
@@ -428,6 +432,21 @@ function AttachLoreMonitor() {
         } else if (event.ctrlKey && (event.key === 'ArrowUp' || event.key === 'Up')) {
             event.preventDefault(); // Prevent default scroll
             navigateTooltips(-1); // -1 for up
+        }
+    });
+
+    const loreTipsDiv = document.getElementById('LoreTips');
+
+     document.addEventListener('keydown', function(event) {
+        if ((event.key === 'Control' || event.key === 'ControlLeft' || event.key === 'ControlRight') && UserChatBox === document.activeElement) { // Check for CTRL and textarea focus
+            loreTipsDiv.classList.add('ctrl-pressed');
+        }
+        // ... (rest of your keydown event listener code) ...
+    });
+
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'Control' || event.key === 'ControlLeft' || event.key === 'ControlRight') {
+            loreTipsDiv.classList.remove('ctrl-pressed');
         }
     });
 
