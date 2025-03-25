@@ -272,6 +272,7 @@ function AttachLoreMonitor() {
         if (!word) return [];
         const lowerWord = word.toLowerCase();
         return loreData.reduce((matches, entry) => {
+            if(entry.disabled) return;
             for (const key of entry.key) {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
