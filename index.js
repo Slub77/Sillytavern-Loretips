@@ -34,7 +34,8 @@ const defaultSettings = {
     viewkey: 69,
     cycleUp: 38,
     cycleDown: 40,
-    SelectLT: 9
+    SelectLT: 9,
+    rowstoshow:2,
 };
 
 /**
@@ -106,7 +107,7 @@ function addExtensionSettings(settings) {
     enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
     inlineDrawerContent.append(enabledCheckboxLabel);
 
-     //Sam Button
+     //Refresh Lore Fail Safe  Button
     const ReBuuild = document.createElement(`input`);
     ReBuuild.type = 'button';
     ReBuuild.value  = "Rebuild";
@@ -114,27 +115,28 @@ function addExtensionSettings(settings) {
             //console.log("Sam Button! Rebuild");
             ReBuildLore();
     });
-    
     inlineDrawerContent.append(ReBuuild);
 
-   
-
-    // Show if streaming
-    const showIfStreamingCheckboxLabel = document.createElement('label');
-    showIfStreamingCheckboxLabel.classList.add('checkbox_label');
-    showIfStreamingCheckboxLabel.htmlFor = 'typingIndicatorShowIfStreaming';
-    const showIfStreamingCheckbox = document.createElement('input');
-    showIfStreamingCheckbox.id = 'typingIndicatorShowIfStreaming';
-    showIfStreamingCheckbox.type = 'checkbox';
-    showIfStreamingCheckbox.checked = settings.streaming;
-    showIfStreamingCheckbox.addEventListener('change', () => {
-        settings.streaming = showIfStreamingCheckbox.checked;
+    //Rows to Show
+    const LoreRowsToShow = document.createElement(`input`);
+    LoreRowsToShow.type = 'number';
+    LoreRowsToShow.placeholder  = "2";
+    LoreRowsToShow.min  = 1;
+    LoreRowsToShow.max  = 20;
+    LoreRowsToShow.step  = 1;
+    
+    LoreRowsToShow.addEventListener('change', () => {
+           
+        settings.rowstoshow = LoreRowsToShow.value;
         saveSettingsDebounced();
+        ReBuildLore();
     });
-    const showIfStreamingCheckboxText = document.createElement('span');
-    showIfStreamingCheckboxText.textContent = t`Show if streaming`;
-    showIfStreamingCheckboxLabel.append(showIfStreamingCheckbox, showIfStreamingCheckboxText);
-    inlineDrawerContent.append(showIfStreamingCheckboxLabel);
+    inlineDrawerContent.append(LoreRowsToShow);
+    
+
+    
+
+ 
 }
 
 
@@ -149,6 +151,10 @@ var CachedLore = []
 
 
 function GenerateLoreTip() {
+
+    const settings = getSettings();
+
+   
     
    // --- Create HTML Elements Dynamically ---
     const style = document.createElement('style');
@@ -159,7 +165,7 @@ function GenerateLoreTip() {
             position: absolute;
             border: 1px solid #ccc;
             background-color: var(--SmartThemeBlurTintColor);
-            max-height: 90px;
+            max-height: ${settings.rowstoshow * 40}px;
             overflow-y: auto;
             max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
