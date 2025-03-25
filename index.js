@@ -162,11 +162,15 @@ var CachedLore = []
 function GenerateLoreTip() {
 
     if(document.getElementById("LoreTips") != undefined) { //we already have the loretip
-        return;
+
+    document.getElementById("LoreTips").remove();
+    document.getElementById("LoretipCss").remove();  
+    console.log("Slub: Refreshed CSS/LoreTip");
     }
     
    // --- Create HTML Elements Dynamically ---
     const style = document.createElement('style');
+    style.id = "LoretipCss";
     style.textContent = `
         #LoreTips {
             display: none;
@@ -175,6 +179,7 @@ function GenerateLoreTip() {
             background-color: white;
             max-height: 90px;
             overflow-y: auto;
+            max-width:800px;
             z-index: 200; /* Ensure it's above the textarea if needed */
         }
         #LoreTips table {
@@ -213,23 +218,10 @@ function GenerateLoreTip() {
     const headerRow = document.createElement('tr');
     tableHead.appendChild(headerRow);
 
-    const commentHeader = document.createElement('th');
-    commentHeader.textContent = 'Comment';
-    headerRow.appendChild(commentHeader);
-
-    const triggersHeader = document.createElement('th');
-    triggersHeader.textContent = 'Triggers';
-    headerRow.appendChild(triggersHeader);
-
-
     const loreTipsTableBody = document.createElement('tbody');
     loreTipsTableBody.id = 'loreTipsTableBody';
     loreTipsTable.appendChild(loreTipsTableBody);
 
-
-
-  
-    
     document.body.appendChild(loreTipsDiv);
 
     console.log("Slub: Added LoreTip")
