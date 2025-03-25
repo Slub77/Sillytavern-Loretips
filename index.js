@@ -57,6 +57,99 @@ function getSettings() {
 }
 
 
+/**
+ * Draws the settings for this extension.
+ * @param {TypingIndicatorSettings} settings Settings object
+ * @returns {void}
+ */
+function addExtensionSettings(settings) {
+    const settingsContainer = document.getElementById('loretips_container') ?? document.getElementById('extensions_settings');
+    if (!settingsContainer) {
+        return;
+    }
+
+    const inlineDrawer = document.createElement('div');
+    inlineDrawer.classList.add('inline-drawer');
+    settingsContainer.append(inlineDrawer);
+
+    const inlineDrawerToggle = document.createElement('div');
+    inlineDrawerToggle.classList.add('inline-drawer-toggle', 'inline-drawer-header');
+
+    const extensionName = document.createElement('b');
+    extensionName.textContent = t`Lore Tips`;
+
+    const inlineDrawerIcon = document.createElement('div');
+    inlineDrawerIcon.classList.add('inline-drawer-icon', 'fa-solid', 'fa-circle-chevron-down', 'down');
+
+    inlineDrawerToggle.append(extensionName, inlineDrawerIcon);
+
+    const inlineDrawerContent = document.createElement('div');
+    inlineDrawerContent.classList.add('inline-drawer-content');
+
+    inlineDrawer.append(inlineDrawerToggle, inlineDrawerContent);
+
+    // Enabled
+    const enabledCheckboxLabel = document.createElement('label');
+    enabledCheckboxLabel.classList.add('checkbox_label');
+    enabledCheckboxLabel.htmlFor = 'typingIndicatorEnabled';
+    const enabledCheckbox = document.createElement('input');
+    enabledCheckbox.id = 'lootTipEnabled';
+    enabledCheckbox.type = 'checkbox';
+    enabledCheckbox.checked = settings.enabled;
+    enabledCheckbox.addEventListener('change', () => {
+        settings.enabled = enabledCheckbox.checked;
+        saveSettingsDebounced();
+    });
+    const enabledCheckboxText = document.createElement('span');
+    enabledCheckboxText.textContent = t`Enabled`;
+    enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
+    inlineDrawerContent.append(enabledCheckboxLabel);
+
+
+    //Sam Button
+    const TriggerLoreDump = document.createElement(`input`);
+    TriggerLoreDump.type = 'button';
+    TriggerLoreDump.textContent = "Regenerate Cache";
+    TriggerLoreDump.addEventListener('click', () => {
+            console.log("Sam Button! Cache");
+            PrintWorldInfo();
+    });
+    
+    inlineDrawerContent.append(TriggerLoreDump);
+
+        //Sam Button
+    const ReBuuild = document.createElement(`input`);
+    ReBuuild.type = 'button';
+    ReBuuild.textContent = "Rebuild";
+    ReBuuild.addEventListener('click', () => {
+            console.log("Sam Button! Rebuild");
+            ReBuildLore();
+    });
+    
+    inlineDrawerContent.append(ReBuuild);
+
+   
+
+    // Show if streaming
+    const showIfStreamingCheckboxLabel = document.createElement('label');
+    showIfStreamingCheckboxLabel.classList.add('checkbox_label');
+    showIfStreamingCheckboxLabel.htmlFor = 'typingIndicatorShowIfStreaming';
+    const showIfStreamingCheckbox = document.createElement('input');
+    showIfStreamingCheckbox.id = 'typingIndicatorShowIfStreaming';
+    showIfStreamingCheckbox.type = 'checkbox';
+    showIfStreamingCheckbox.checked = settings.streaming;
+    showIfStreamingCheckbox.addEventListener('change', () => {
+        settings.streaming = showIfStreamingCheckbox.checked;
+        saveSettingsDebounced();
+    });
+    const showIfStreamingCheckboxText = document.createElement('span');
+    showIfStreamingCheckboxText.textContent = t`Show if streaming`;
+    showIfStreamingCheckboxLabel.append(showIfStreamingCheckbox, showIfStreamingCheckboxText);
+    inlineDrawerContent.append(showIfStreamingCheckboxLabel);
+}
+
+
+
 async function PrintWorldInfo() {
     CachedLore = await getSortedEntries();
     console.log(CachedLore);
@@ -356,6 +449,11 @@ function AttachLoreMonitor() {
 
 }
 
+async function ReBuildLore() {
+    GenerateLoreTip();
+    AttachLoreMonitor();
+}
+
 
 (async function () {
     const settings = getSettings();
@@ -364,7 +462,6 @@ function AttachLoreMonitor() {
 
 
     await PrintWorldInfo();
-    GenerateLoreTip();
-    AttachLoreMonitor();
+    await ReBuildLore();
     
 })();
