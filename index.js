@@ -239,7 +239,7 @@ function GenerateLoreTip() {
 
 function AttachLoreMonitor() {
 
-    const textarea = document.getElementById('send_textarea');
+    const UserChatBox = document.getElementById('send_textarea');
     const loreTipsDiv = document.getElementById('LoreTips');
     const loreTipsTableBody = document.getElementById('loreTipsTableBody');
 
@@ -255,8 +255,8 @@ function AttachLoreMonitor() {
 
     // Function to get the current word under the cursor
     function getCurrentWord() {
-        const inputValue = textarea.value;
-        const cursorPosition = textarea.selectionStart;
+        const inputValue = UserChatBox.value;
+        const cursorPosition = UserChatBox.selectionStart;
         let wordStart = 0;
         let wordEnd = inputValue.length;
 
@@ -341,14 +341,14 @@ function AttachLoreMonitor() {
     // Function to handle input with debounce
     function handleInput() {
         clearTimeout(timeoutId);
-
+ console.log("Slub: Searching>")
         
         timeoutId = setTimeout(() => {
                     console.log("Slub: Searching")
             const currentInputWord = getCurrentWord();
-            if (currentInputWord !== currentWord || textarea.value !== lastInputValue) {
+            if (currentInputWord !== currentWord || UserChatBox.value !== lastInputValue) {
                 currentWord = currentInputWord;
-                lastInputValue = textarea.value;
+                lastInputValue = UserChatBox.value;
                 const matches = searchTriggers(currentWord);
                 displayTooltips(matches);
             }
@@ -369,20 +369,20 @@ function AttachLoreMonitor() {
 
 
     // Event listeners
-    textarea.addEventListener('focus', function() {
+    UserChatBox.addEventListener('focus', function() {
         // Check word on focus if needed (implementation for cursor move focus below covers this)
     });
 
-    textarea.addEventListener('blur', function() {
+    UserChatBox.addEventListener('blur', function() {
         hideTooltips();
         console.log("Slub: DeFocus")
         currentWord = ''; // Reset current word on blur
     });
 
-    textarea.addEventListener('input', handleInput);
+    UserChatBox.addEventListener('input', handleInput);
 
 
-    textarea.addEventListener('keydown', function(event) {
+    UserChatBox.addEventListener('keydown', function(event) {
         if (event.key === ' ' || event.key === 'Spacebar') { // Handle space key to hide tooltip
             hideTooltips();
             console.log("Slub: New Word")
@@ -425,11 +425,11 @@ function AttachLoreMonitor() {
 
 
     // --- Cursor position change or re-focus logic ---
-    textarea.addEventListener('mouseup', handleCursorMove); // Mouse click to move cursor
-    textarea.addEventListener('keyup', handleCursorMove);   // Arrow keys to move cursor
+    UserChatBox.addEventListener('mouseup', handleCursorMove); // Mouse click to move cursor
+    UserChatBox.addEventListener('keyup', handleCursorMove);   // Arrow keys to move cursor
 
     function handleCursorMove() {
-        if (textarea === document.activeElement) { // Only if textarea is focused
+        if (UserChatBox === document.activeElement) { // Only if textarea is focused
             const currentInputWord = getCurrentWord();
             if (currentInputWord) {
                 if (currentInputWord !== currentWord) {
@@ -448,7 +448,7 @@ function AttachLoreMonitor() {
 
     // --- Initial setup for LoreTips width ---
     function setLoreTipsWidth() {
-        loreTipsDiv.style.width = textarea.offsetWidth + 'px';
+        loreTipsDiv.style.width = UserChatBox.offsetWidth + 'px';
     }
 
     setLoreTipsWidth(); // Set initial width
