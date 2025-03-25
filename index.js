@@ -111,7 +111,7 @@ function addExtensionSettings(settings) {
     ReBuuild.type = 'button';
     ReBuuild.value  = "Rebuild";
     ReBuuild.addEventListener('click', () => {
-            console.log("Sam Button! Rebuild");
+            //console.log("Sam Button! Rebuild");
             ReBuildLore();
     });
     
@@ -141,7 +141,7 @@ function addExtensionSettings(settings) {
 
 async function LoreTipGetLatest() {
     CachedLore = await getSortedEntries();
-    //console.log(CachedLore);
+    ////console.log(CachedLore);
     return;
 }
 
@@ -222,7 +222,7 @@ function GenerateLoreTip() {
 
     document.body.appendChild(loreTipsDiv);
 
-    console.log("Slub: Added LoreTip")
+    //console.log("Slub: Added LoreTip")
 
 }
 
@@ -274,7 +274,7 @@ function AttachLoreMonitor() {
         if (!word) return [];
         const lowerWord = word.toLowerCase();
         return loreData.reduce((matches, entry) => {
-            if(entry.disable) return;
+            if(entry.disable) return matches;
             for (const key of entry.key) {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
@@ -334,10 +334,10 @@ function AttachLoreMonitor() {
     // Function to handle input with debounce
     function handleInput() {
         clearTimeout(timeoutId);
- console.log("Slub: Searching>")
+ //console.log("Slub: Searching>")
         
         timeoutId = setTimeout(() => {
-                    console.log("Slub: Searching")
+            //console.log("Slub: Searching")
             const currentInputWord = getCurrentWord();
             if (currentInputWord !== currentWord || UserChatBox.value !== lastInputValue) {
                 currentWord = currentInputWord;
@@ -368,7 +368,7 @@ function AttachLoreMonitor() {
 
     UserChatBox.addEventListener('blur', function() {
         hideTooltips();
-        console.log("Slub: DeFocus")
+        //console.log("Slub: DeFocus")
         currentWord = ''; // Reset current word on blur
     });
 
@@ -378,7 +378,7 @@ function AttachLoreMonitor() {
     UserChatBox.addEventListener('keydown', function(event) {
         if (event.key === ' ' || event.key === 'Spacebar') { // Handle space key to hide tooltip
             hideTooltips();
-            console.log("Slub: New Word")
+            //console.log("Slub: New Word")
             currentWord = ''; // Reset current word on space
         } else if (event.ctrlKey && (event.key === 'ArrowDown' || event.key === 'Down')) {
             event.preventDefault(); // Prevent default scroll
@@ -483,7 +483,7 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
 
     document.getElementById("LoreTips").remove();
     document.getElementById("LoretipCss").remove();  
-    console.log("Slub: Refreshed CSS/LoreTip");
+    //console.log("Slub: Refreshed CSS/LoreTip");
 }
 
     const settings = getSettings();
