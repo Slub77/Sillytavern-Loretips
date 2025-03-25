@@ -191,7 +191,7 @@ function GenerateLoreTip() {
             overflow-y: auto;
             max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
-            opacity:0.2;
+            opacity:0.4;
         }
 
         #LoreTips:hover {
@@ -341,6 +341,7 @@ function AttachLoreMonitor() {
             matches.forEach((match, index) => {
                 const row = loreTipsTableBody.insertRow();
                 if(match.truematch) row.style.backgroundColor = "var(--tertiaryBg)";
+                if(!match.truematch) row.style.opacity = 0.5;
                 const commentCell = row.insertCell(0);
                 const triggersCell = row.insertCell(1);
                 const contentCell = row.insertCell(2);
