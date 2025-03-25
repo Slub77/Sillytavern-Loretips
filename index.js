@@ -435,8 +435,6 @@ function AttachLoreMonitor() {
         }
     });
 
-    const loreTipsDiv = document.getElementById('LoreTips');
-
      document.addEventListener('keydown', function(event) {
         if ((event.key === 'Control' || event.key === 'ControlLeft' || event.key === 'ControlRight') && UserChatBox === document.activeElement) { // Check for CTRL and textarea focus
             loreTipsDiv.classList.add('ctrl-pressed');
