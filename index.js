@@ -129,6 +129,8 @@ function addExtensionSettings(settings) {
 
      const LoreRowsToShowLabel = document.createElement('span');
     LoreRowsToShowLabel.innerHTML = "Rows to show"
+    LoreRowsToShowLabel.style.padding = "3px"
+    LoreRowsToShowLabel.style.fontWeight = "bold"
     
     const LoreRowsToShow = document.createElement(`input`);
     LoreRowsToShow.type = 'number';
@@ -136,7 +138,6 @@ function addExtensionSettings(settings) {
     LoreRowsToShow.min  = 1;
     LoreRowsToShow.max  = 20;
     LoreRowsToShow.step  = 1;
-    LoreRowsToShow.style.width  = "00px";
     LoreRowsToShow.classList.add('text_pole')
     
     
