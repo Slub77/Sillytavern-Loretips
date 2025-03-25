@@ -126,12 +126,19 @@ function addExtensionSettings(settings) {
      inlineDrawerContent2 = document.createElement('div');
     inlineDrawerContent2.classList.add('inline-drawer-content');
     //Rows to Show
+
+     const LoreRowsToShowLabel = document.createElement('span');
+    LoreRowsToShowLabel.innerHTML = "Rows to show"
+    
     const LoreRowsToShow = document.createElement(`input`);
     LoreRowsToShow.type = 'number';
     LoreRowsToShow.value  = settings.rowstoshow;
     LoreRowsToShow.min  = 1;
     LoreRowsToShow.max  = 20;
     LoreRowsToShow.step  = 1;
+    LoreRowsToShow.style.width  = "00px";
+    LoreRowsToShow.classList.add('text_pole')
+    
     
     LoreRowsToShow.addEventListener('change', () => {
 
@@ -142,7 +149,7 @@ function addExtensionSettings(settings) {
         }
     });
     
-    inlineDrawerContent2.append(LoreRowsToShow);
+    inlineDrawerContent2.append(LoreRowsToShowLabel, LoreRowsToShow);
     inlineDrawer.append(inlineDrawerContent2);
 
 
