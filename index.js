@@ -460,7 +460,7 @@ function AttachLoreMonitor() {
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
     //loreTipsDiv.style.width = textarea.offsetWidth + 'px';
-    loreTipsDiv.style.maxWidth = textarea.offsetWidth + 'px';
+    loreTipsDiv.style.maxWidth = textarea.Width + 'px';
         
 
     // Set z-index for LoreTips to be higher than textarea
@@ -473,8 +473,6 @@ function AttachLoreMonitor() {
         loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
     }
     loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
-
-         loreTipsDiv.style.width = textarea.offsetWidth + 'px';
         
 }
 
