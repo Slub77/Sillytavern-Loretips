@@ -109,7 +109,7 @@ function addExtensionSettings(settings) {
     //Sam Button
     const TriggerLoreDump = document.createElement(`input`);
     TriggerLoreDump.type = 'button';
-    TriggerLoreDump.textContent = "Regenerate Cache";
+    TriggerLoreDump.innerHTML  = "Regenerate Cache";
     TriggerLoreDump.addEventListener('click', () => {
             console.log("Sam Button! Cache");
             PrintWorldInfo();
@@ -120,7 +120,7 @@ function addExtensionSettings(settings) {
         //Sam Button
     const ReBuuild = document.createElement(`input`);
     ReBuuild.type = 'button';
-    ReBuuild.textContent = "Rebuild";
+    ReBuuild.innerHTML  = "Rebuild";
     ReBuuild.addEventListener('click', () => {
             console.log("Sam Button! Rebuild");
             ReBuildLore();
@@ -289,7 +289,7 @@ function AttachLoreMonitor() {
             for (const key of entry.key) {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
-                    if (lowerKey.includes(lowerWord)) {
+                    if (lowerKey == lowerWord) {
                         matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys to avoid duplicates from same entry
                     }
@@ -495,7 +495,7 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
     document.getElementById("LoreTips").remove();
     document.getElementById("LoretipCss").remove();  
     console.log("Slub: Refreshed CSS/LoreTip");
-    }
+}
     
     GenerateLoreTip();
     AttachLoreMonitor();
