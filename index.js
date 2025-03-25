@@ -313,7 +313,7 @@ function AttachLoreMonitor() {
             for (const key of entry.key) {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
-                    if (lowerKey == lowerWord) {
+                    if (lowerKey.includes(lowerWord)) {
                         matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys to avoid duplicates from same entry
                     }
