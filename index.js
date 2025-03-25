@@ -160,13 +160,6 @@ var CachedLore = []
 
 
 function GenerateLoreTip() {
-
-    if(document.getElementById("LoreTips") != undefined) { //we already have the loretip
-
-    document.getElementById("LoreTips").remove();
-    document.getElementById("LoretipCss").remove();  
-    console.log("Slub: Refreshed CSS/LoreTip");
-    }
     
    // --- Create HTML Elements Dynamically ---
     const style = document.createElement('style');
@@ -179,16 +172,16 @@ function GenerateLoreTip() {
             background-color: white;
             max-height: 90px;
             overflow-y: auto;
-            max-width:800px;
+            max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
         }
         #LoreTips table {
             width: 100%;
             border-collapse: collapse; /* Optional: For cleaner table borders */
         }
-        #LoreTips th, #LoreTips td {
+        #LoreTips td {
             border: 1px solid #ddd; /* Optional: Add borders to table cells */
-            padding: 8px;
+            padding: 5px;
             text-align: left;
             word-break: break-word; /* Ensure long words wrap */
             max-width: 50%; /* Limit width of each cell */
@@ -449,7 +442,7 @@ function AttachLoreMonitor() {
 
     // Position LoreTips 80px above the textarea and same left alignment
     loreTipsDiv.style.top = (textareaRect.top + window.scrollY - 80) + 'px'; // Add scrollY for absolute positioning in document
-    loreTipsDiv.style.left = textareaRect.left + 'px';
+    loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
     loreTipsDiv.style.width = textarea.offsetWidth + 'px';
@@ -476,6 +469,14 @@ window.addEventListener('resize', positionLoreTips);
 }
 
 async function ReBuildLore() {
+
+if(document.getElementById("LoreTips") != undefined) { //we already have the loretip
+
+    document.getElementById("LoreTips").remove();
+    document.getElementById("LoretipCss").remove();  
+    console.log("Slub: Refreshed CSS/LoreTip");
+    }
+    
     GenerateLoreTip();
     AttachLoreMonitor();
 }
