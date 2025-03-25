@@ -99,28 +99,17 @@ function addExtensionSettings(settings) {
     enabledCheckbox.addEventListener('change', () => {
         settings.enabled = enabledCheckbox.checked;
         saveSettingsDebounced();
+        ReBuildLore();
     });
     const enabledCheckboxText = document.createElement('span');
     enabledCheckboxText.textContent = t`Enabled`;
     enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
     inlineDrawerContent.append(enabledCheckboxLabel);
 
-
-    //Sam Button
-    const TriggerLoreDump = document.createElement(`input`);
-    TriggerLoreDump.type = 'button';
-    TriggerLoreDump.innerHTML  = "Regenerate Cache";
-    TriggerLoreDump.addEventListener('click', () => {
-            console.log("Sam Button! Cache");
-            PrintWorldInfo();
-    });
-    
-    inlineDrawerContent.append(TriggerLoreDump);
-
-        //Sam Button
+     //Sam Button
     const ReBuuild = document.createElement(`input`);
     ReBuuild.type = 'button';
-    ReBuuild.innerHTML  = "Rebuild";
+    ReBuuild.value  = "Rebuild";
     ReBuuild.addEventListener('click', () => {
             console.log("Sam Button! Rebuild");
             ReBuildLore();
@@ -378,7 +367,7 @@ function AttachLoreMonitor() {
     });
 
     UserChatBox.addEventListener('blur', function() {
-        //hideTooltips();
+        hideTooltips();
         console.log("Slub: DeFocus")
         currentWord = ''; // Reset current word on blur
     });
@@ -388,7 +377,7 @@ function AttachLoreMonitor() {
 
     UserChatBox.addEventListener('keydown', function(event) {
         if (event.key === ' ' || event.key === 'Spacebar') { // Handle space key to hide tooltip
-            //hideTooltips();
+            hideTooltips();
             console.log("Slub: New Word")
             currentWord = ''; // Reset current word on space
         } else if (event.ctrlKey && (event.key === 'ArrowDown' || event.key === 'Down')) {
@@ -443,7 +432,7 @@ function AttachLoreMonitor() {
                     resetHighlight(); // Reset highlight when list updates due to cursor move
                 }
             } else {
-                //hideTooltips(); // Hide if no word under cursor
+                hideTooltips(); // Hide if no word under cursor
                 currentWord = '';
             }
         }
@@ -496,9 +485,13 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
     document.getElementById("LoretipCss").remove();  
     console.log("Slub: Refreshed CSS/LoreTip");
 }
-    
-    GenerateLoreTip();
-    AttachLoreMonitor();
+
+    const settings = getSettings();
+
+    if(settings.enabled) {
+        GenerateLoreTip();
+        AttachLoreMonitor();
+    }
 }
 
 
