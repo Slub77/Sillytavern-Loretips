@@ -165,7 +165,7 @@ function GenerateLoreTip() {
             position: absolute;
             border: 1px solid #ccc;
             background-color: var(--SmartThemeBlurTintColor);
-            max-height: ${settings.rowstoshow * 30}px;
+            max-height: ${settings.rowstoshow * 60}px;
             overflow-y: auto;
             max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
@@ -460,7 +460,7 @@ function AttachLoreMonitor() {
     const textareaRect = textarea.getBoundingClientRect();
 
     // Position LoreTips 80px above the textarea and same left alignment
-    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (settings.rowstoshow * 30) - 50) + 'px'; // Add scrollY for absolute positioning in document
+    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (settings.rowstoshow * 30)) + 'px'; // Add scrollY for absolute positioning in document
     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
