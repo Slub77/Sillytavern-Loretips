@@ -169,11 +169,12 @@ function GenerateLoreTip() {
             display: none;
             position: absolute;
             border: 1px solid #ccc;
-            background-color: white;
+            background-color: var(--SmartThemeBlurTintColor);
             max-height: 90px;
             overflow-y: auto;
             max-width:1200px;
             z-index: 200; /* Ensure it's above the textarea if needed */
+            opacity:0.8;
         }
         #LoreTips table {
             width: 100%;
@@ -181,19 +182,21 @@ function GenerateLoreTip() {
         }
         #LoreTips td {
             border: 1px solid #ddd; /* Optional: Add borders to table cells */
-            padding: 5px;
+            padding: calc(var(--mainFontSize)* 1);
             text-align: left;
             word-break: break-word; /* Ensure long words wrap */
             max-width: 50%; /* Limit width of each cell */
             overflow: hidden; /* Prevent content overflow */
             text-overflow: ellipsis; /* Indicate overflow with ellipsis */
             white-space: nowrap; /* Prevent line breaks in cells */
+            color: var(--SmartThemeBodyColor);
+            text-shadow: 0px 0px calc(var(--shadowWidth)* 1px) var(--SmartThemeChatTintColor) !important;
         }
         #loreTipsTableBody tr:hover {
-            background-color: #f0f0f0; /* Highlight on hover */
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlight on hover */
         }
         #loreTipsTableBody tr.highlighted {
-            background-color: #e0e0e0; /* Highlighted row */
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlighted row */
         }
     `;
     document.head.appendChild(style);
