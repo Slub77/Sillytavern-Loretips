@@ -9,7 +9,7 @@ import {
 
 import {
   getActiveWorldInfo,
-} from 'sillytavern-utils-lib';
+} from 'sillytavern-utils-lib/types/world-info';
 
 import { extension_settings } from '../../../extensions.js';
 import { selected_group } from '../../../group-chats.js';
