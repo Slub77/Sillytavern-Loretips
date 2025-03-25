@@ -5,6 +5,8 @@ import {
     isStreamingEnabled,
     saveSettingsDebounced,
 } from '../../../../script.js';
+
+
 import {
   getActiveWorldInfo,
 } from 'sillytavern-utils-lib';
@@ -52,6 +54,12 @@ function getSettings() {
     }
 
     return extension_settings[MODULE];
+}
+
+
+async function PrintWorldInfo() {
+    const entriesGroupByWorldName = await getActiveWorldInfo(['all'], this_chid);
+    console.log(entriesGroupByWorldName)
 }
 
 /**
@@ -104,13 +112,15 @@ function addExtensionSettings(settings) {
 
 
     //Sam Button
-    const TriggerLoreDump = document.createElement(`button`);
-        TriggerLoreDump.addEventListener('click', () => {
-    console.log("Sam Button!");
-             PrintWorldInfo();
+    const TriggerLoreDump = document.createElement(`input`);
+    TriggerLoreDump.type = 'button';
+    TriggerLoreDump.innertext = "Slub";
+    TriggerLoreDump.addEventListener('click', () => {
+            console.log("Sam Button!");
+            PrintWorldInfo();
     });
     
-inlineDrawerContent.append(TriggerLoreDump);
+    inlineDrawerContent.append(TriggerLoreDump);
 
    
 
@@ -194,11 +204,7 @@ function hideTypingIndicator() {
     }
 }
 
-async function PrintWorldInfo() {
-const entriesGroupByWorldName = await getActiveWorldInfo(['all'], this_chid);
 
-    console.log(entriesGroupByWorldName)
-}
 
 (function () {
     const settings = getSettings();
