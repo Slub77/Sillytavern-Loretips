@@ -232,6 +232,8 @@ function GenerateLoreTip() {
     
     document.body.appendChild(loreTipsDiv);
 
+    console.log("Slub: Added LoreTip")
+
 }
 
 
@@ -242,7 +244,7 @@ function AttachLoreMonitor() {
     const loreTipsTableBody = document.getElementById('loreTipsTableBody');
 
     // Your data array (provided in the prompt)
-    const loreData = [ /* ... your data array here ... */ ]; // **Important: Paste your data array here**
+    const loreData = CachedLore;
 
 
     let timeoutId;
@@ -339,7 +341,10 @@ function AttachLoreMonitor() {
     // Function to handle input with debounce
     function handleInput() {
         clearTimeout(timeoutId);
+
+        
         timeoutId = setTimeout(() => {
+                    console.log("Slub: Searching")
             const currentInputWord = getCurrentWord();
             if (currentInputWord !== currentWord || textarea.value !== lastInputValue) {
                 currentWord = currentInputWord;
@@ -370,6 +375,7 @@ function AttachLoreMonitor() {
 
     textarea.addEventListener('blur', function() {
         hideTooltips();
+        console.log("Slub: DeFocus")
         currentWord = ''; // Reset current word on blur
     });
 
@@ -379,6 +385,7 @@ function AttachLoreMonitor() {
     textarea.addEventListener('keydown', function(event) {
         if (event.key === ' ' || event.key === 'Spacebar') { // Handle space key to hide tooltip
             hideTooltips();
+            console.log("Slub: New Word")
             currentWord = ''; // Reset current word on space
         } else if (event.ctrlKey && (event.key === 'ArrowDown' || event.key === 'Down')) {
             event.preventDefault(); // Prevent default scroll
