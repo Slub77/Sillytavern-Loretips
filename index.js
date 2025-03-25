@@ -293,12 +293,12 @@ function AttachLoreMonitor() {
                         matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys to avoid duplicates from same entry
                     }
-                } else if (key instanceof RegExp) { // Handle regex keys (if any in future, currently not used for triggers)
-                    if (key.test(word)) {
+                } else if (key.test(word)) { // Handle regex keys (if any in future, currently not used for triggers)
+                    
                         matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys
                     }
-                }
+                
             }
             return matches;
         }, []);
@@ -464,8 +464,8 @@ function AttachLoreMonitor() {
     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
-    //loreTipsDiv.style.width = textarea.offsetWidth + 'px';
-    loreTipsDiv.style.maxWidth = textarea.clientWidth + 'px';
+    loreTipsDiv.style.width = textarea.offsetWidth - 32 + 'px';
+    loreTipsDiv.style.maxWidth = textarea.offsetWidth - 32 + 'px';
         
 
     // Set z-index for LoreTips to be higher than textarea
