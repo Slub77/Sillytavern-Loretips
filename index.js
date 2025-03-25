@@ -314,7 +314,7 @@ function AttachLoreMonitor() {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
                     if (lowerKey.includes(lowerWord)) {
-                        matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
+                        matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content, truematch:lowerKey == lowerWord });
                         return matches; // Return after first match in keys to avoid duplicates from same entry
                     }
                 } else if (key.test(new RegExp(word, "g"))) { // Handle regex keys (if any in future, currently not used for triggers)
@@ -340,6 +340,7 @@ function AttachLoreMonitor() {
 
             matches.forEach((match, index) => {
                 const row = loreTipsTableBody.insertRow();
+                if(match.truematch) row.style.backgroundColor = "var(--tertiaryBg)";
                 const commentCell = row.insertCell(0);
                 const triggersCell = row.insertCell(1);
                 const contentCell = row.insertCell(2);
