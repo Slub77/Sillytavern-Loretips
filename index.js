@@ -507,6 +507,6 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
         event_types.WORLDINFO_SETTINGS_UPDATED,
     ];
 
-    UpdatedWorldInfo.forEach(e => eventSource.on(e, LoreTipGetLatest()));
+    UpdatedWorldInfo.forEach(e => eventSource.on(e, LoreTipGetLatest));
     
 })();
