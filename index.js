@@ -293,7 +293,7 @@ function AttachLoreMonitor() {
                         matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys to avoid duplicates from same entry
                     }
-                } else if (key.test(word)) { // Handle regex keys (if any in future, currently not used for triggers)
+                } else if (key.test(new RegExp(word, "g"))) { // Handle regex keys (if any in future, currently not used for triggers)
                     
                         matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
                         return matches; // Return after first match in keys
