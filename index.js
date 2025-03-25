@@ -139,9 +139,9 @@ function addExtensionSettings(settings) {
 
 
 
-async function PrintWorldInfo() {
+async function LoreTipGetLatest() {
     CachedLore = await getSortedEntries();
-    console.log(CachedLore);
+    //console.log(CachedLore);
     return;
 }
 
@@ -274,7 +274,7 @@ function AttachLoreMonitor() {
         if (!word) return [];
         const lowerWord = word.toLowerCase();
         return loreData.reduce((matches, entry) => {
-            if(entry.disabled) return;
+            if(entry.disable) return;
             for (const key of entry.key) {
                 if (typeof key === 'string') { // Handle string keys
                     const lowerKey = key.toLowerCase();
@@ -498,10 +498,15 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
 (async function () {
     const settings = getSettings();
     addExtensionSettings(settings);
-
-
-
-    await PrintWorldInfo();
+    await LoreTipGetLatest();
     await ReBuildLore();
+
+            
+    const UpdatedWorldInfo = [
+        event_types.WORLDINFO_UPDATED,
+        event_types.WORLDINFO_SETTINGS_UPDATED,
+    ];
+
+    UpdatedWorldInfo.forEach(e => eventSource.on(e, LoreTipGetLatest()));
     
 })();
