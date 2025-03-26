@@ -288,6 +288,7 @@ async function LoreTipGetLatest() {
     return;
 }
 
+var CachedLore = []
 let stringLoreData = []; // Data for string-based triggers (moved to module scope)
 let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
 let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
