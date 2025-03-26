@@ -323,32 +323,30 @@ let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
             const regexKeys = [];
 
             entry.key.forEach(key => {
-                let isIgnored = false;
-                for (const ignoredRegex of ignoredRegexPatterns) {
-                    if (typeof key === 'string' && ignoredRegex.test(key)) {
-                        isIgnored = true;
-                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Key "${key}" ignored due to regex: ${ignoredRegex.toString()}`);
-                        break; // No need to check other ignored regexes
-                    } else if (typeof key !== 'string' && key instanceof RegExp && ignoredRegex.test(key.source)) { // Check regex source if key is already a RegExp
-                        isIgnored = true;
-                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Key "${key.source}" ignored due to regex: ${ignoredRegex.toString()}`);
-                        break;
-                    }
-                }
-                if (isIgnored) return; // Skip to next key if this one is ignored
-
+                let isIgnoredRegexTrigger = false; // Flag for ignoring THIS specific key
 
                 if (typeof key === 'string' && key.startsWith('/') && key.endsWith('/')) {
-                    // Assume regex if starts and ends with '/'
-                    const regexPattern = key.slice(1, -1); // Remove delimiters
-                    try {
-                        const regex = new RegExp(regexPattern, 'i'); // 'i' for case-insensitive, add flags as needed
-                        regexKeys.push(regex);
-                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled: ${key} `); //Debug Log
-                    } catch (e) {
-                        console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
-                        stringKeys.push(key); // Treat as string if regex is invalid
-                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `); //Debug Log
+                    // It's a regex-like string trigger
+                    const regexPatternString = key.slice(1, -1); // Remove delimiters to get the pattern
+
+                    for (const ignoredRegex of ignoredRegexPatterns) {
+                        if (ignoredRegex.test(regexPatternString)) {
+                            isIgnoredRegexTrigger = true;
+                            if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Trigger Key "${key}" ignored because pattern "${regexPatternString}" matches ignored regex: ${ignoredRegex.toString()}`);
+                            break; // No need to check other ignored regexes
+                        }
+                    }
+
+                    if (!isIgnoredRegexTrigger) { // Only process if NOT ignored
+                        try {
+                            const regex = new RegExp(regexPatternString, 'i'); // 'i' for case-insensitive, add flags as needed
+                            regexKeys.push(regex);
+                             if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled: ${key} `); //Debug Log
+                        } catch (e) {
+                            console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
+                            stringKeys.push(key); // Treat as string if regex is invalid
+                             if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `); //Debug Log
+                        }
                     }
                 } else if (typeof key === 'string') {
                     stringKeys.push(key); // Treat as string if not regex delimited
@@ -357,6 +355,7 @@ let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
                     console.warn(`LoreTips: Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
                      if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Non-String Key Ignored: ${key} `); //Debug Log
                 }
+
             });
 
             if (regexKeys.length > 0) {
@@ -371,6 +370,7 @@ let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
             console.log("LoreTips: Regex Lore Data Generated", regexLoreData);
         }
     }
+
 
 function GenerateLoreTip() {
 
