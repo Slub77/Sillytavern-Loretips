@@ -289,85 +289,95 @@ async function LoreTipGetLatest() {
 }
 
 var CachedLore = []
-let stringLoreData = []; // Data for string-based triggers (moved to module scope)
-let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
-let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
+let stringLoreData = [];
+let regexLoreData = [];
+let ignoredRegexPatterns = [];
 
-    // Pre-process lore data to separate string and regex triggers (Moved outside GenerateLoreTip to module scope)
-    function PreProcessLore() {
-        const settings = getSettings();
-        stringLoreData = []; // Clear existing data on re-process
-        regexLoreData = [];
-        ignoredRegexPatterns = []; // Clear previous ignored patterns
+function PreProcessLore() {
+    const settings = getSettings();
+    stringLoreData = [];
+    regexLoreData = [];
+    ignoredRegexPatterns = [];
 
-        // Process ignored regex patterns from settings
-        if (settings.ignoredRegex) {
-            const ignoredRegexStrings = settings.ignoredRegex.split(',').map(s => s.trim()); // Split by comma and trim whitespace
-            ignoredRegexStrings.forEach(patternString => {
-                if (patternString) { // Only process non-empty patterns
-                    try {
-                        const regex = new RegExp(patternString, 'i'); // 'i' for case-insensitive
-                        ignoredRegexPatterns.push(regex);
-                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Ignored Regex Pattern Compiled: ${patternString}`); //Debug Log
-                    } catch (e) {
-                        console.warn(`LoreTips: PreProcessLore - Invalid ignored regex pattern: ${patternString}`);
+    if (settings.ignoredRegex) {
+        const ignoredRegexStrings = settings.ignoredRegex.split(',').map(s => s.trim());
+        ignoredRegexStrings.forEach(patternString => {
+            if (patternString) {
+                try {
+                    const regex = new RegExp(patternString, 'i');
+                    ignoredRegexPatterns.push(regex);
+                    if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Ignored Regex Pattern Compiled: ${patternString}`);
+                } catch (e) {
+                    console.warn(`LoreTips: PreProcessLore - Invalid ignored regex pattern: ${patternString}`);
+                }
+            }
+        });
+    }
+    if (settings.debugMode) console.log("LoreTips: PreProcessLore - Ignored Regex Patterns:", ignoredRegexPatterns);
+
+
+    CachedLore.forEach(entry => {
+        const stringKeys = [];
+        const regexKeys = [];
+
+        entry.key.forEach(key => {
+            let isIgnoredRegexTrigger = false;
+
+            // **Modified Regex Detection Logic:**
+            if (typeof key === 'string' && key.startsWith('/') && key.lastIndexOf('/') > 0) { // Check for lastIndexOf > 0
+                const lastSlashIndex = key.lastIndexOf('/');
+                const regexPatternString = key.slice(1, lastSlashIndex); // Extract pattern up to the last slash
+                const flags = key.slice(lastSlashIndex + 1); // Extract flags after the last slash
+
+                if (settings.debugMode) {
+                    console.log(`LoreTips: PreProcessLore - Potential Regex Key Found: ${key}`);
+                    console.log(`LoreTips: PreProcessLore - Extracted Regex Pattern: ${regexPatternString}`);
+                    console.log(`LoreTips: PreProcessLore - Extracted Regex Flags: ${flags}`); // Log flags
+                }
+
+                for (const ignoredRegex of ignoredRegexPatterns) {
+                    if (ignoredRegex.test(regexPatternString)) {
+                        isIgnoredRegexTrigger = true;
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Trigger Key "${key}" ignored because pattern "${regexPatternString}" matches ignored regex: ${ignoredRegex.toString()}`);
+                        break;
                     }
                 }
-            });
-        }
-        if (settings.debugMode) console.log("LoreTips: PreProcessLore - Ignored Regex Patterns:", ignoredRegexPatterns);
 
-
-        CachedLore.forEach(entry => {
-            const stringKeys = [];
-            const regexKeys = [];
-
-            entry.key.forEach(key => {
-                let isIgnoredRegexTrigger = false; // Flag for ignoring THIS specific key
-
-                if (typeof key === 'string' && key.startsWith('/') && key.endsWith('/')) {
-                    // Assume regex if starts and ends with '/'
-                    const regexPattern = key.slice(1, -1); // Remove delimiters
-
-                    if (settings.debugMode) { // Added debug logging here
-                        console.log(`LoreTips: PreProcessLore - Potential Regex Key Found: ${key}`);
-                        console.log(`LoreTips: PreProcessLore - Extracted Regex Pattern: ${regexPattern}`); // Log the pattern
-                    }
-
+                if (!isIgnoredRegexTrigger) {
                     try {
-                        const regex = new RegExp(regexPattern, 'i'); // 'i' for case-insensitive, add flags as needed
+                        const regex = new RegExp(regexPatternString, flags); // Use extracted flags
                         regexKeys.push(regex);
-                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled Successfully: ${key} `); //Debug Log
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled Successfully: ${key} with flags "${flags}"`);
                     } catch (e) {
                         console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
                         if (settings.debugMode) {
-                            console.log(`LoreTips: PreProcessLore - RegExp Error for key: ${key}`, e); // Log the error object
+                            console.log(`LoreTips: PreProcessLore - RegExp Error for key: ${key}`, e);
                         }
-                        stringKeys.push(key); // Treat as string if regex is invalid
-                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `); //Debug Log
+                        stringKeys.push(key);
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `);
                     }
-                } else if (typeof key === 'string') {
-                    stringKeys.push(key); // Treat as string if not regex delimited
-                     if (settings.debugMode) console.log(`LoreTips: PreProcessLore - String Key Added: ${key} `); //Debug Log
-                } else {
-                    console.warn(`LoreTips: Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
-                     if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Non-String Key Ignored: ${key} `); //Debug Log
                 }
-
-            });
-
-            if (regexKeys.length > 0) {
-                regexLoreData.push({...entry, key: regexKeys}); // Create new entry with regex keys
-            }
-            if (stringKeys.length > 0) {
-                 stringLoreData.push({...entry, key: stringKeys}); // Create new entry with string keys
+            } else if (typeof key === 'string') {
+                stringKeys.push(key);
+                if (settings.debugMode) console.log(`LoreTips: PreProcessLore - String Key Added: ${key} `);
+            } else {
+                console.warn(`LoreTips: Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
+                if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Non-String Key Ignored: ${key} `);
             }
         });
-         if (settings.debugMode) {
-            console.log("LoreTips: String Lore Data Generated", stringLoreData);
-            console.log("LoreTips: Regex Lore Data Generated", regexLoreData);
+
+        if (regexKeys.length > 0) {
+            regexLoreData.push({...entry, key: regexKeys});
         }
+        if (stringKeys.length > 0) {
+            stringLoreData.push({...entry, key: stringKeys});
+        }
+    });
+    if (settings.debugMode) {
+        console.log("LoreTips: String Lore Data Generated", stringLoreData);
+        console.log("LoreTips: Regex Lore Data Generated", regexLoreData);
     }
+}
 
 function GenerateLoreTip() {
 
