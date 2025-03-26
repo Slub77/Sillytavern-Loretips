@@ -105,6 +105,7 @@ function addExtensionSettings(settings) {
     enabledCheckbox.id = 'lootTipEnabled';
     enabledCheckbox.type = 'checkbox';
     enabledCheckbox.checked = settings.enabled;
+    enabledCheckbox.classList.add('text_pole'); // Added class
     enabledCheckbox.addEventListener('change', () => {
         settings.enabled = enabledCheckbox.checked;
         saveSettingsDebounced();
@@ -123,6 +124,7 @@ function addExtensionSettings(settings) {
     debugModeCheckbox.id = 'loreTipsDebugMode';
     debugModeCheckbox.type = 'checkbox';
     debugModeCheckbox.checked = settings.debugMode;
+    debugModeCheckbox.classList.add('text_pole'); // Added class
     debugModeCheckbox.addEventListener('change', () => {
         settings.debugMode = debugModeCheckbox.checked;
         saveSettingsDebounced();
@@ -142,6 +144,7 @@ function addExtensionSettings(settings) {
     checkDelayInput.type = 'number';
     checkDelayInput.min = 100;
     checkDelayInput.value = settings.delay;
+    checkDelayInput.classList.add('text_pole'); // Added class
     checkDelayInput.addEventListener('change', () => {
         settings.delay = parseInt(checkDelayInput.value, 10);
         if (settings.delay < 100) settings.delay = 100;
@@ -159,6 +162,7 @@ function addExtensionSettings(settings) {
     regexIntervalInput.type = 'number';
     regexIntervalInput.min = 100;
     regexIntervalInput.value = settings.regexInterval;
+    regexIntervalInput.classList.add('text_pole'); // Added class
     regexIntervalInput.addEventListener('change', () => {
         settings.regexInterval = parseInt(regexIntervalInput.value, 10);
         if (settings.regexInterval < 100) settings.regexInterval = 100;
@@ -178,6 +182,7 @@ function addExtensionSettings(settings) {
     defaultOpacityInput.max = 1;
     defaultOpacityInput.step = 0.05;
     defaultOpacityInput.value = settings.defaultOpacity;
+    defaultOpacityInput.classList.add('text_pole'); // Added class
     defaultOpacityInput.addEventListener('change', () => {
         settings.defaultOpacity = parseFloat(defaultOpacityInput.value);
         if (settings.defaultOpacity < 0) settings.defaultOpacity = 0;
@@ -199,6 +204,7 @@ function addExtensionSettings(settings) {
         <option value="top">Top of Screen</option>
     `;
     tooltipPositionSelect.value = settings.tooltipPosition;
+    tooltipPositionSelect.classList.add('text_pole'); // Added class
     tooltipPositionSelect.addEventListener('change', () => {
         settings.tooltipPosition = tooltipPositionSelect.value;
         saveSettingsDebounced();
@@ -215,6 +221,7 @@ function addExtensionSettings(settings) {
     const textColorOverrideInput = document.createElement('input');
     textColorOverrideInput.type = 'color';
     textColorOverrideInput.value = settings.textColorOverride;
+    textColorOverrideInput.classList.add('text_pole'); // Added class
     textColorOverrideInput.addEventListener('change', () => {
         settings.textColorOverride = textColorOverrideInput.value;
         saveSettingsDebounced();
@@ -231,6 +238,7 @@ function addExtensionSettings(settings) {
     const backgroundColorOverrideInput = document.createElement('input');
     backgroundColorOverrideInput.type = 'color';
     backgroundColorOverrideInput.value = settings.backgroundColorOverride;
+    backgroundColorOverrideInput.classList.add('text_pole'); // Added class
     backgroundColorOverrideInput.addEventListener('change', () => {
         settings.backgroundColorOverride = backgroundColorOverrideInput.value;
         saveSettingsDebounced();
@@ -244,6 +252,7 @@ function addExtensionSettings(settings) {
     const resetDefaultsButton = document.createElement('input');
     resetDefaultsButton.type = 'button';
     resetDefaultsButton.value = t`Reset to Defaults`;
+    resetDefaultsButton.classList.add('text_pole'); // Added class
     resetDefaultsButton.addEventListener('click', () => {
         extension_settings[MODULE] = structuredClone(defaultSettings); // Reset settings
         saveSettingsDebounced();
@@ -283,14 +292,18 @@ let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
                     try {
                         const regex = new RegExp(regexPattern, 'i'); // 'i' for case-insensitive, add flags as needed
                         regexKeys.push(regex);
+                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled: ${key} `); //Debug Log
                     } catch (e) {
                         console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
                         stringKeys.push(key); // Treat as string if regex is invalid
+                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `); //Debug Log
                     }
                 } else if (typeof key === 'string') {
                     stringKeys.push(key); // Treat as string if not regex delimited
+                     if (settings.debugMode) console.log(`LoreTips: PreProcessLore - String Key Added: ${key} `); //Debug Log
                 } else {
                     console.warn(`LoreTips: Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
+                     if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Non-String Key Ignored: ${key} `); //Debug Log
                 }
             });
 
@@ -335,17 +348,17 @@ function GenerateLoreTip() {
         }
         #LoreTips table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: collapse; /* Optional: For cleaner table borders */
         }
         #LoreTips td {
             border: 0px solid;
             max-height:30px;
             padding: calc(var(--mainFontSize)* 1);
             text-align: left;
-            word-break: break-word;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            word-break: break-word; /* Ensure long words wrap */
+            overflow: hidden; /* Prevent content overflow */
+            text-overflow: ellipsis; /* Indicate overflow with ellipsis */
+            white-space: nowrap; /* Prevent line breaks in cells */
             color: ${settings.textColorOverride || 'var(--SmartThemeBodyColor)'};
             text-shadow: 0px 0px calc(var(--shadowWidth)* 1px) var(--SmartThemeChatTintColor) !important;
         }
@@ -363,12 +376,12 @@ function GenerateLoreTip() {
 
 
         #loreTipsTableBody tr:hover {
-            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%);
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlight on hover */
         }
         #loreTipsTableBody tr.highlighted {
-            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%);
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlighted row */
         }
-        .regex-match {
+        .regex-match { /* Style for regex match rows, can customize */
             font-style: italic;
             color: darkgray;
         }
@@ -510,7 +523,7 @@ function AttachLoreMonitor() {
             for (const key of entry.key) { // entry.key is now always string[]
                 const lowerKey = key.toLowerCase();
                 if (lowerKey.includes(lowerInput)) {
-                     if (settings.debugMode) console.log(`LoreTips: String Match found for "${inputString}" in key "${key}"`);
+                     if (settings.debugMode) console.log(`LoreTips: String Match found for "${inputString}" in key "${key}"`); //Debug Log
                     matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content, entry: entry, isRegex: false }); // isRegex flag
                     return matches;
                 }
@@ -527,11 +540,12 @@ function AttachLoreMonitor() {
             if(entry.disable) return matches;
             for (const key of entry.key) { // entry.key is now always RegExp[]
                 if (key instanceof RegExp) { // Explicitly check for RegExp object
+                     if (settings.debugMode) console.log(`LoreTips: Testing Regex: ${key.toString()} against "${fullInput}"`); //Debug Log
                     if (key.test(fullInput)) {
-                         if (settings.debugMode) console.log(`LoreTips: Regex Match found for "${fullInput}" in key "${key.toString()}"`);
+                         if (settings.debugMode) console.log(`LoreTips: Regex Match Found: ${key.toString()} for "${fullInput}"`); //Debug Log
                         matches.push({ comment: entry.comment, triggers: entry.key.map(r => r.toString()), content: entry.content, entry: entry, isRegex: true }); // isRegex flag, store regex as string for display
                         return matches;
-                    }
+                    } else  if (settings.debugMode) console.log(`LoreTips: Regex No Match: ${key.toString()} for "${fullInput}"`); //Debug Log
                 }
             }
             return matches;
