@@ -630,8 +630,10 @@ function AttachLoreMonitor() {
     }
 
 
-    // Function to handle input with debounce (Modified for Regex Check)
-   function handleInput() {
+      // Function to handle input with debounce (Modified for Regex Check)
+    function handleInput() {
+        if (settings.debugMode) console.log("LoreTips: handleInput FUNCTION CALLED"); // **NEW DEBUG LOG - Is handleInput being called at all?**
+
         const settings = getSettings(); // Get settings at the start of handleInput
         clearTimeout(timeoutId);
         clearTimeout(regexCheckTimeout); // Clear any pending regex check
@@ -664,9 +666,9 @@ function AttachLoreMonitor() {
 
         // Schedule a regex check after the input delay (or after a short interval)
         clearTimeout(regexCheckTimeout); // Clear previous timeout to avoid overlaps
-        if (settings.debugMode) console.log("LoreTips: handleInput - Setting up regexCheckTimeout"); // **NEW DEBUG LOG - Is handleInput even reaching this point?**
+        if (settings.debugMode) console.log("LoreTips: handleInput - Setting up regexCheckTimeout");
         regexCheckTimeout = setTimeout(() => {
-            if (settings.debugMode) console.log("LoreTips: regexCheckTimeout FIRING - About to call searchRegexTriggers"); // **DEBUG LOG - Timer is setting up, is it firing?**
+            if (settings.debugMode) console.log("LoreTips: regexCheckTimeout FIRING - About to call searchRegexTriggers");
             const currentFullInput = UserChatBox.value;
             const newRegexMatches = searchRegexTriggers(currentFullInput);
 
@@ -724,6 +726,7 @@ function AttachLoreMonitor() {
     // --- Cursor position change or re-focus logic --- (No changes)
     UserChatBox.addEventListener('mouseup', handleCursorMove); // Mouse click to move cursor
     UserChatBox.addEventListener('keyup', handleCursorMove);   // Arrow keys to move cursor
+    UserChatBox.addEventListener('input', handleInput);
 
     function handleCursorMove() {
         if (UserChatBox === document.activeElement) { // Only if textarea is focused
