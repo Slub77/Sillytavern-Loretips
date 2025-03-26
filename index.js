@@ -42,6 +42,7 @@ const defaultSettings = {
     cycleDown: 40,
     SelectLT: 9,
     rowstoshow:2,
+    ignoredRegex: "", // New setting for ignored regex
 };
 
 /**
@@ -247,6 +248,22 @@ function addExtensionSettings(settings) {
     backgroundColorOverrideLabel.append(backgroundColorOverrideSpan, backgroundColorOverrideInput);
     inlineDrawerContent.append(backgroundColorOverrideLabel);
 
+      // **New: Ignored Regex Setting**
+    const ignoredRegexLabel = document.createElement('label');
+    ignoredRegexLabel.classList.add('labeled_input');
+    const ignoredRegexSpan = document.createElement('span');
+    ignoredRegexSpan.textContent = t`Ignored Regex (comma-separated):`; // Instruction for delimiter
+    const ignoredRegexInput = document.createElement('input');
+    ignoredRegexInput.type = 'text';
+    ignoredRegexInput.value = settings.ignoredRegex;
+    ignoredRegexInput.classList.add('text_pole');
+    ignoredRegexInput.addEventListener('change', () => {
+        settings.ignoredRegex = ignoredRegexInput.value;
+        saveSettingsDebounced();
+        PreProcessLore(); // Re-preprocess lore when ignored regex changes
+    });
+    ignoredRegexLabel.append(ignoredRegexSpan, ignoredRegexInput);
+    inlineDrawerContent.append(ignoredRegexLabel);
 
     // Reset to Defaults Button
     const resetDefaultsButton = document.createElement('input');
@@ -271,21 +288,55 @@ async function LoreTipGetLatest() {
     return;
 }
 
-var CachedLore = []
 let stringLoreData = []; // Data for string-based triggers (moved to module scope)
 let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
-
+let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
 
     // Pre-process lore data to separate string and regex triggers (Moved outside GenerateLoreTip to module scope)
     function PreProcessLore() {
         const settings = getSettings();
         stringLoreData = []; // Clear existing data on re-process
         regexLoreData = [];
+        ignoredRegexPatterns = []; // Clear previous ignored patterns
+
+        // Process ignored regex patterns from settings
+        if (settings.ignoredRegex) {
+            const ignoredRegexStrings = settings.ignoredRegex.split(',').map(s => s.trim()); // Split by comma and trim whitespace
+            ignoredRegexStrings.forEach(patternString => {
+                if (patternString) { // Only process non-empty patterns
+                    try {
+                        const regex = new RegExp(patternString, 'i'); // 'i' for case-insensitive
+                        ignoredRegexPatterns.push(regex);
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Ignored Regex Pattern Compiled: ${patternString}`); //Debug Log
+                    } catch (e) {
+                        console.warn(`LoreTips: PreProcessLore - Invalid ignored regex pattern: ${patternString}`);
+                    }
+                }
+            });
+        }
+        if (settings.debugMode) console.log("LoreTips: PreProcessLore - Ignored Regex Patterns:", ignoredRegexPatterns);
+
+
         CachedLore.forEach(entry => {
             const stringKeys = [];
             const regexKeys = [];
 
             entry.key.forEach(key => {
+                let isIgnored = false;
+                for (const ignoredRegex of ignoredRegexPatterns) {
+                    if (typeof key === 'string' && ignoredRegex.test(key)) {
+                        isIgnored = true;
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Key "${key}" ignored due to regex: ${ignoredRegex.toString()}`);
+                        break; // No need to check other ignored regexes
+                    } else if (typeof key !== 'string' && key instanceof RegExp && ignoredRegex.test(key.source)) { // Check regex source if key is already a RegExp
+                        isIgnored = true;
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Key "${key.source}" ignored due to regex: ${ignoredRegex.toString()}`);
+                        break;
+                    }
+                }
+                if (isIgnored) return; // Skip to next key if this one is ignored
+
+
                 if (typeof key === 'string' && key.startsWith('/') && key.endsWith('/')) {
                     // Assume regex if starts and ends with '/'
                     const regexPattern = key.slice(1, -1); // Remove delimiters
@@ -319,7 +370,6 @@ let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
             console.log("LoreTips: Regex Lore Data Generated", regexLoreData);
         }
     }
-
 
 function GenerateLoreTip() {
 
