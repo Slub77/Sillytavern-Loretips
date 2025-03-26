@@ -632,9 +632,11 @@ function AttachLoreMonitor() {
 
       // Function to handle input with debounce (Modified for Regex Check)
     function handleInput() {
-        if (settings.debugMode) console.log("LoreTips: handleInput FUNCTION CALLED"); // **NEW DEBUG LOG - Is handleInput being called at all?**
+      
 
         const settings = getSettings(); // Get settings at the start of handleInput
+         if (settings.debugMode) console.log("LoreTips: handleInput FUNCTION CALLED"); // **NEW DEBUG LOG - Is handleInput being called at all?**
+        
         clearTimeout(timeoutId);
         clearTimeout(regexCheckTimeout); // Clear any pending regex check
 
