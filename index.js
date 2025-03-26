@@ -623,7 +623,7 @@ function AttachLoreMonitor() {
 
     // Function to hide and clear tooltips (No changes)
     function hideTooltips() {
-        loreTipsDiv.style.display: 'none';
+        loreTipsDiv.style.display = 'none';
         loreTipsTableBody.innerHTML = '';
         visibleMatches = [];
         highlightedRowIndex = 0;
