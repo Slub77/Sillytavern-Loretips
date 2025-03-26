@@ -30,7 +30,13 @@ const userinputField = document.getElementById(`send_textarea`);
  */
 const defaultSettings = {
     enabled: false,
-    delay : 200,
+    delay : 200, // How often we attempt to check for matches
+    regexInterval: 1000, // How often we attempt to check for Regex
+    defaultOpacity: 0.4, // Default opacity of the LoreTip display
+    tooltipPosition: "above", // "above" or "top" - Tooltip position
+    debugMode: false, // Enable debug logging
+    textColorOverride: "", // Text color override
+    backgroundColorOverride: "", // Background color override
     viewkey: 69,
     cycleUp: 38,
     cycleDown: 40,
@@ -87,13 +93,14 @@ function addExtensionSettings(settings) {
 
     let inlineDrawerContent = document.createElement('div');
     inlineDrawerContent.classList.add('inline-drawer-content');
+    inlineDrawerContent.style.flexDirection = 'column'; // Stack settings vertically
 
     inlineDrawer.append(inlineDrawerToggle, inlineDrawerContent);
 
     // Enabled
     const enabledCheckboxLabel = document.createElement('label');
     enabledCheckboxLabel.classList.add('checkbox_label');
-    enabledCheckboxLabel.htmlFor = 'typingIndicatorEnabled';
+    enabledCheckboxLabel.htmlFor = 'lootTipEnabled';
     const enabledCheckbox = document.createElement('input');
     enabledCheckbox.id = 'lootTipEnabled';
     enabledCheckbox.type = 'checkbox';
@@ -108,62 +115,150 @@ function addExtensionSettings(settings) {
     enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
     inlineDrawerContent.append(enabledCheckboxLabel);
 
-    let inlineDrawerContent2 = document.createElement('div');
-    inlineDrawerContent2.classList.add('inline-drawer-content');
-
-     //Refresh Lore Fail Safe  Button
-    const ReBuuild = document.createElement(`input`);
-    ReBuuild.type = 'button';
-    ReBuuild.value  = "Rebuild";
-    ReBuuild.addEventListener('click', () => {
-            //console.log("Sam Button! Rebuild");
-            ReBuildLore();
+    // Debug Mode
+    const debugModeCheckboxLabel = document.createElement('label');
+    debugModeCheckboxLabel.classList.add('checkbox_label');
+    debugModeCheckboxLabel.htmlFor = 'loreTipsDebugMode';
+    const debugModeCheckbox = document.createElement('input');
+    debugModeCheckbox.id = 'loreTipsDebugMode';
+    debugModeCheckbox.type = 'checkbox';
+    debugModeCheckbox.checked = settings.debugMode;
+    debugModeCheckbox.addEventListener('change', () => {
+        settings.debugMode = debugModeCheckbox.checked;
+        saveSettingsDebounced();
     });
-    inlineDrawerContent2.append(ReBuuild);
-    inlineDrawer.append(inlineDrawerContent2);
-
-     inlineDrawerContent2 = document.createElement('div');
-    inlineDrawerContent2.classList.add('inline-drawer-content');
-    //Rows to Show
-
-     const LoreRowsToShowLabel = document.createElement('span');
-    LoreRowsToShowLabel.innerHTML = "Rows to show"
-    LoreRowsToShowLabel.style.padding = "3px"
-    LoreRowsToShowLabel.style.fontWeight = "bold"
-
-    const LoreRowsToShow = document.createElement(`input`);
-    LoreRowsToShow.type = 'number';
-    LoreRowsToShow.value  = settings.rowstoshow;
-    LoreRowsToShow.min  = 1;
-    LoreRowsToShow.max  = 20;
-    LoreRowsToShow.step  = 1;
-    LoreRowsToShow.classList.add('text_pole')
+    const debugModeCheckboxText = document.createElement('span');
+    debugModeCheckboxText.textContent = t`Debug Mode`;
+    debugModeCheckboxLabel.append(debugModeCheckbox, debugModeCheckboxText);
+    inlineDrawerContent.append(debugModeCheckboxLabel);
 
 
-    LoreRowsToShow.addEventListener('change', () => {
-
-        if(!isNaN(LoreRowsToShow.value)) {
-            settings.rowstoshow = LoreRowsToShow.value;
-            saveSettingsDebounced();
-            ReBuildLore();
-        }
+    // Check Delay
+    const checkDelayLabel = document.createElement('label');
+    checkDelayLabel.classList.add('labeled_input');
+    const checkDelaySpan = document.createElement('span');
+    checkDelaySpan.textContent = t`Check Delay (ms):`;
+    const checkDelayInput = document.createElement('input');
+    checkDelayInput.type = 'number';
+    checkDelayInput.min = 100;
+    checkDelayInput.value = settings.delay;
+    checkDelayInput.addEventListener('change', () => {
+        settings.delay = parseInt(checkDelayInput.value, 10);
+        if (settings.delay < 100) settings.delay = 100;
+        saveSettingsDebounced();
     });
+    checkDelayLabel.append(checkDelaySpan, checkDelayInput);
+    inlineDrawerContent.append(checkDelayLabel);
 
-    inlineDrawerContent2.append(LoreRowsToShowLabel, LoreRowsToShow);
-    inlineDrawer.append(inlineDrawerContent2);
+    // Regex Interval
+    const regexIntervalLabel = document.createElement('label');
+    regexIntervalLabel.classList.add('labeled_input');
+    const regexIntervalSpan = document.createElement('span');
+    regexIntervalSpan.textContent = t`Regex Interval (ms):`;
+    const regexIntervalInput = document.createElement('input');
+    regexIntervalInput.type = 'number';
+    regexIntervalInput.min = 100;
+    regexIntervalInput.value = settings.regexInterval;
+    regexIntervalInput.addEventListener('change', () => {
+        settings.regexInterval = parseInt(regexIntervalInput.value, 10);
+        if (settings.regexInterval < 100) settings.regexInterval = 100;
+        saveSettingsDebounced();
+    });
+    regexIntervalLabel.append(regexIntervalSpan, regexIntervalInput);
+    inlineDrawerContent.append(regexIntervalLabel);
+
+    // Default Opacity
+    const defaultOpacityLabel = document.createElement('label');
+    defaultOpacityLabel.classList.add('labeled_input');
+    const defaultOpacitySpan = document.createElement('span');
+    defaultOpacitySpan.textContent = t`Default Opacity:`;
+    const defaultOpacityInput = document.createElement('input');
+    defaultOpacityInput.type = 'number';
+    defaultOpacityInput.min = 0;
+    defaultOpacityInput.max = 1;
+    defaultOpacityInput.step = 0.05;
+    defaultOpacityInput.value = settings.defaultOpacity;
+    defaultOpacityInput.addEventListener('change', () => {
+        settings.defaultOpacity = parseFloat(defaultOpacityInput.value);
+        if (settings.defaultOpacity < 0) settings.defaultOpacity = 0;
+        if (settings.defaultOpacity > 1) settings.defaultOpacity = 1;
+        saveSettingsDebounced();
+        UpdateLoreTipStyle(); // Update style directly without rebuild
+    });
+    defaultOpacityLabel.append(defaultOpacitySpan, defaultOpacityInput);
+    inlineDrawerContent.append(defaultOpacityLabel);
+
+    // Tooltip Position
+    const tooltipPositionLabel = document.createElement('label');
+    tooltipPositionLabel.classList.add('labeled_input');
+    const tooltipPositionSpan = document.createElement('span');
+    tooltipPositionSpan.textContent = t`Tooltip Position:`;
+    const tooltipPositionSelect = document.createElement('select');
+    tooltipPositionSelect.innerHTML = `
+        <option value="above">Above Textarea</option>
+        <option value="top">Top of Screen</option>
+    `;
+    tooltipPositionSelect.value = settings.tooltipPosition;
+    tooltipPositionSelect.addEventListener('change', () => {
+        settings.tooltipPosition = tooltipPositionSelect.value;
+        saveSettingsDebounced();
+        positionLoreTips(); // Reposition tooltip
+    });
+    tooltipPositionLabel.append(tooltipPositionSpan, tooltipPositionSelect);
+    inlineDrawerContent.append(tooltipPositionLabel);
+
+    // Text Color Override
+    const textColorOverrideLabel = document.createElement('label');
+    textColorOverrideLabel.classList.add('labeled_input');
+    const textColorOverrideSpan = document.createElement('span');
+    textColorOverrideSpan.textContent = t`Text Color Override:`;
+    const textColorOverrideInput = document.createElement('input');
+    textColorOverrideInput.type = 'color';
+    textColorOverrideInput.value = settings.textColorOverride;
+    textColorOverrideInput.addEventListener('change', () => {
+        settings.textColorOverride = textColorOverrideInput.value;
+        saveSettingsDebounced();
+        UpdateLoreTipStyle();
+    });
+    textColorOverrideLabel.append(textColorOverrideSpan, textColorOverrideInput);
+    inlineDrawerContent.append(textColorOverrideLabel);
+
+    // Background Color Override
+    const backgroundColorOverrideLabel = document.createElement('label');
+    backgroundColorOverrideLabel.classList.add('labeled_input');
+    const backgroundColorOverrideSpan = document.createElement('span');
+    backgroundColorOverrideSpan.textContent = t`Background Color Override:`;
+    const backgroundColorOverrideInput = document.createElement('input');
+    backgroundColorOverrideInput.type = 'color';
+    backgroundColorOverrideInput.value = settings.backgroundColorOverride;
+    backgroundColorOverrideInput.addEventListener('change', () => {
+        settings.backgroundColorOverride = backgroundColorOverrideInput.value;
+        saveSettingsDebounced();
+        UpdateLoreTipStyle();
+    });
+    backgroundColorOverrideLabel.append(backgroundColorOverrideSpan, backgroundColorOverrideInput);
+    inlineDrawerContent.append(backgroundColorOverrideLabel);
 
 
-
+    // Reset to Defaults Button
+    const resetDefaultsButton = document.createElement('input');
+    resetDefaultsButton.type = 'button';
+    resetDefaultsButton.value = t`Reset to Defaults`;
+    resetDefaultsButton.addEventListener('click', () => {
+        extension_settings[MODULE] = structuredClone(defaultSettings); // Reset settings
+        saveSettingsDebounced();
+        addExtensionSettings(getSettings()); // Re-draw settings UI
+        ReBuildLore(); // Rebuild LoreTips UI
+    });
+    inlineDrawerContent.append(resetDefaultsButton);
 
 
 }
 
 
-
 async function LoreTipGetLatest() {
     CachedLore = await getSortedEntries();
     PreProcessLore(); // Preprocess lore data after fetching latest
-    ////console.log(CachedLore);
     return;
 }
 
@@ -174,6 +269,7 @@ let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
 
     // Pre-process lore data to separate string and regex triggers (Moved outside GenerateLoreTip to module scope)
     function PreProcessLore() {
+        const settings = getSettings();
         stringLoreData = []; // Clear existing data on re-process
         regexLoreData = [];
         CachedLore.forEach(entry => {
@@ -188,13 +284,13 @@ let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
                         const regex = new RegExp(regexPattern, 'i'); // 'i' for case-insensitive, add flags as needed
                         regexKeys.push(regex);
                     } catch (e) {
-                        console.warn(`Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
+                        console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
                         stringKeys.push(key); // Treat as string if regex is invalid
                     }
                 } else if (typeof key === 'string') {
                     stringKeys.push(key); // Treat as string if not regex delimited
                 } else {
-                    console.warn(`Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
+                    console.warn(`LoreTips: Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
                 }
             });
 
@@ -205,6 +301,10 @@ let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
                  stringLoreData.push({...entry, key: stringKeys}); // Create new entry with string keys
             }
         });
+         if (settings.debugMode) {
+            console.log("LoreTips: String Lore Data Generated", stringLoreData);
+            console.log("LoreTips: Regex Lore Data Generated", regexLoreData);
+        }
     }
 
 
@@ -221,12 +321,12 @@ function GenerateLoreTip() {
             display: none;
             position: absolute;
             border: 1px solid #ccc;
-            background-color: var(--SmartThemeBlurTintColor);
-            max-height: ${settings.rowstoshow * 60}px;
+            background-color: ${settings.backgroundColorOverride || 'var(--SmartThemeBlurTintColor)'};
+            max-height: ${settings.rowstoshow * 30}px; /* Adjusted row height to 30px */
             overflow-y: auto;
             max-width:1200px;
-            z-index: 200; /* Ensure it's above the textarea if needed */
-            opacity:0.4;
+            z-index: 200;
+            opacity:${settings.defaultOpacity};
         }
 
         #LoreTips:hover {
@@ -235,18 +335,18 @@ function GenerateLoreTip() {
         }
         #LoreTips table {
             width: 100%;
-            border-collapse: collapse; /* Optional: For cleaner table borders */
+            border-collapse: collapse;
         }
         #LoreTips td {
             border: 0px solid;
             max-height:30px;
             padding: calc(var(--mainFontSize)* 1);
             text-align: left;
-            word-break: break-word; /* Ensure long words wrap */
-            overflow: hidden; /* Prevent content overflow */
-            text-overflow: ellipsis; /* Indicate overflow with ellipsis */
-            white-space: nowrap; /* Prevent line breaks in cells */
-            color: var(--SmartThemeBodyColor);
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: ${settings.textColorOverride || 'var(--SmartThemeBodyColor)'};
             text-shadow: 0px 0px calc(var(--shadowWidth)* 1px) var(--SmartThemeChatTintColor) !important;
         }
 
@@ -263,12 +363,12 @@ function GenerateLoreTip() {
 
 
         #loreTipsTableBody tr:hover {
-            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlight on hover */
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%);
         }
         #loreTipsTableBody tr.highlighted {
-            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlighted row */
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%);
         }
-        .regex-match { /* Style for regex match rows, can customize */
+        .regex-match {
             font-style: italic;
             color: darkgray;
         }
@@ -296,8 +396,71 @@ function GenerateLoreTip() {
 
     document.body.appendChild(loreTipsDiv);
 
-    //console.log("Slub: Added LoreTip")
 
+}
+
+function UpdateLoreTipStyle() {
+     const settings = getSettings();
+     const styleElement = document.getElementById('LoretipCss');
+     if (!styleElement) return;
+
+        styleElement.textContent = `
+        #LoreTips {
+            display: none;
+            position: absolute;
+            border: 1px solid #ccc;
+            background-color: ${settings.backgroundColorOverride || 'var(--SmartThemeBlurTintColor)'};
+            max-height: ${settings.rowstoshow * 30}px; /* Adjusted row height to 30px */
+            overflow-y: auto;
+            max-width:1200px;
+            z-index: 200;
+            opacity:${settings.defaultOpacity};
+        }
+
+        #LoreTips:hover {
+            opacity:1;
+
+        }
+        #LoreTips table {
+            width: 100%;
+            border-collapse: collapse; /* Optional: For cleaner table borders */
+        }
+        #LoreTips td {
+            border: 0px solid;
+            max-height:30px;
+            padding: calc(var(--mainFontSize)* 1);
+            text-align: left;
+            word-break: break-word; /* Ensure long words wrap */
+            overflow: hidden; /* Prevent content overflow */
+            text-overflow: ellipsis; /* Indicate overflow with ellipsis */
+            white-space: nowrap; /* Prevent line breaks in cells */
+            color: ${settings.textColorOverride || 'var(--SmartThemeBodyColor)'};
+            text-shadow: 0px 0px calc(var(--shadowWidth)* 1px) var(--SmartThemeChatTintColor) !important;
+        }
+
+        #LoreTips td:nth-child(1)  {
+            max-width: 200px;
+        }
+        #LoreTips td:nth-child(2)  {
+            max-width: 400px;
+        }
+
+        #LoreTips.ctrl-pressed {
+        opacity: 1;
+        }
+
+
+        #loreTipsTableBody tr:hover {
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlight on hover */
+        }
+        #loreTipsTableBody tr.highlighted {
+            background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlighted row */
+        }
+        .regex-match { /* Style for regex match rows, can customize */
+            font-style: italic;
+            color: darkgray;
+        }
+    `;
 }
 
 
@@ -309,6 +472,7 @@ function AttachLoreMonitor() {
 
     // Your data array (provided in the prompt) - now using preprocessed data
     const loreData = CachedLore;
+    const settings = getSettings();
 
 
     let timeoutId;
@@ -319,7 +483,7 @@ function AttachLoreMonitor() {
     let potentialMatchesMemory = [];
     let activeRegexMatches = []; // Store currently active regex matches
     let regexCheckTimeout; // Timer for regex checks
-    const regexCheckInterval = 1000; // Check regex every 1 second (adjust as needed)
+    const regexCheckInterval = settings.regexInterval; // Check regex every 1 second (adjust as needed)
 
 
     // Function to get the current input string since last space (No changes)
@@ -346,6 +510,7 @@ function AttachLoreMonitor() {
             for (const key of entry.key) { // entry.key is now always string[]
                 const lowerKey = key.toLowerCase();
                 if (lowerKey.includes(lowerInput)) {
+                     if (settings.debugMode) console.log(`LoreTips: String Match found for "${inputString}" in key "${key}"`);
                     matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content, entry: entry, isRegex: false }); // isRegex flag
                     return matches;
                 }
@@ -362,7 +527,8 @@ function AttachLoreMonitor() {
             if(entry.disable) return matches;
             for (const key of entry.key) { // entry.key is now always RegExp[]
                 if (key instanceof RegExp) { // Explicitly check for RegExp object
-                    if (key.test(fullInput)) { // Test against the FULL input
+                    if (key.test(fullInput)) {
+                         if (settings.debugMode) console.log(`LoreTips: Regex Match found for "${fullInput}" in key "${key.toString()}"`);
                         matches.push({ comment: entry.comment, triggers: entry.key.map(r => r.toString()), content: entry.content, entry: entry, isRegex: true }); // isRegex flag, store regex as string for display
                         return matches;
                     }
@@ -427,13 +593,13 @@ function AttachLoreMonitor() {
                     //Adjust Height based on total rows - Existing logic
                     const textarea = document.getElementById('form_sheld');
                     const textareaRect = textarea.getBoundingClientRect();
-                    const settings = getSettings();
+
 
                     let CalcNeededHeight = Math.min(visibleMatches.length, settings.rowstoshow) // Use visibleMatches.length
 
                     // Position LoreTips 80px above the textarea and same left alignment - Existing logic
                     loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 30) - 10) + 'px'; // Adjusted height calculation
-                    loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
+
 
         } else {
             hideTooltips();
@@ -451,6 +617,7 @@ function AttachLoreMonitor() {
 
     // Function to handle input with debounce (Modified for Regex Check)
     function handleInput() {
+        const settings = getSettings(); // Get settings at the start of handleInput
         clearTimeout(timeoutId);
         clearTimeout(regexCheckTimeout); // Clear any pending regex check
 
@@ -493,7 +660,7 @@ function AttachLoreMonitor() {
             displayTooltips(currentStringMatches, activeRegexMatches);
             resetHighlight();
 
-        }, regexCheckInterval); // Delay for regex check
+        }, settings.regexInterval); // Delay for regex check
     }
 
     // Function to reset highlight to the top row if list changes (No changes)
@@ -571,39 +738,52 @@ function AttachLoreMonitor() {
     }
 
     function positionLoreTips() {
-    const textarea = document.getElementById('form_sheld');
-    const loreTipsDiv = document.getElementById('LoreTips');
+        const textarea = document.getElementById('form_sheld');
+        const loreTipsDiv = document.getElementById('LoreTips');
 
-    if (!textarea || !loreTipsDiv) {
-        return; // Exit if elements not found
-    }
+        if (!textarea || !loreTipsDiv) {
+            return; // Exit if elements not found
+        }
 
-    const settings = getSettings();
-
-
-    const textareaRect = textarea.getBoundingClientRect();
-
-    let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length,settings.rowstoshow)
-
-    // Position LoreTips 80px above the textarea and same left alignment
-    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 30) - 10) + 'px'; // Adjusted height calculation
-    loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
-
-    // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
-    loreTipsDiv.style.width = textarea.offsetWidth - 32 + 'px';
-    loreTipsDiv.style.maxWidth = textarea.offsetWidth - 32 + 'px';
+        const settings = getSettings();
 
 
-    // Set z-index for LoreTips to be higher than textarea
-    const textareaZIndex = window.getComputedStyle(textarea).zIndex;
-    let loreTipsZIndexValue = 1; // Default z-index for LoreTips
+        const textareaRect = textarea.getBoundingClientRect();
 
-    if (textareaZIndex && textareaZIndex !== 'auto') {
-        loreTipsZIndexValue = parseInt(textareaZIndex, 10) + 1;
-    } else {
-        loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
-    }
-    loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
+
+        let CalcNeededHeight = Math.min(document.getElementById('loretableslub')?.rows?.length || 0,settings.rowstoshow)
+
+
+        let topOffset = 0;
+        if (settings.tooltipPosition === "above") {
+            topOffset = (CalcNeededHeight * 30) + 10; // Adjusted for 30px row height
+        } else if (settings.tooltipPosition === "top") {
+            topOffset = -(loreTipsDiv.offsetHeight + 10) ; // Position at the top of the screen (adjust as needed) - needs proper height detection
+            if (CalcNeededHeight > 0 ) topOffset = 10; // if we have rows, move it down slightly from top
+             else topOffset = -10; // move it up slightly if no rows
+        }
+
+
+        // Position LoreTips  based on settings
+        loreTipsDiv.style.top = (textareaRect.top + window.scrollY - topOffset ) + 'px';
+        loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
+
+
+        // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
+        loreTipsDiv.style.width = textarea.offsetWidth - 32 + 'px';
+        loreTipsDiv.style.maxWidth = textarea.offsetWidth - 32 + 'px';
+
+
+        // Set z-index for LoreTips to be higher than textarea
+        const textareaZIndex = window.getComputedStyle(textarea).zIndex;
+        let loreTipsZIndexValue = 1; // Default z-index for LoreTips
+
+        if (textareaZIndex && textareaZIndex !== 'auto') {
+            loreTipsZIndexValue = parseInt(textareaZIndex, 10) + 1;
+        } else {
+            loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
+        }
+        loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
 
 }
 
