@@ -645,48 +645,42 @@ function AttachLoreMonitor() {
 
     // Function to display tooltips (Modified to handle regex matches) (No changes needed)
     function displayTooltips(stringMatches, regexMatches) { // Takes both types of matches
-        visibleMatches = [...stringMatches, ...regexMatches]; // Combine both match types
-        loreTipsTableBody.innerHTML = '';
-        highlightedRowIndex = 0;
+    visibleMatches = [...stringMatches, ...regexMatches]; // Combine both match types
+    loreTipsTableBody.innerHTML = '';
+    highlightedRowIndex = 0;
 
-        if (visibleMatches.length > 0) {
-            loreTipsDiv.style.display = 'block';
+    if (visibleMatches.length > 0) {
+        loreTipsDiv.style.display = 'block';
 
-            visibleMatches.forEach((match, index) => {
-                const row = loreTipsTableBody.insertRow();
-                if(match.truematch) row.style.backgroundColor = "var(--tertiaryBg)"; // Existing style
-                if(!match.truematch) row.style.opacity = 0.5; // Existing style
-                const commentCell = row.insertCell(0);
-                const triggersCell = row.insertCell(1);
-                const contentCell = row.insertCell(2);
+        visibleMatches.forEach((match, index) => {
+            const row = loreTipsTableBody.insertRow();
+            if(match.truematch) row.style.backgroundColor = "var(--tertiaryBg)"; // Existing style
+            if(!match.truematch) row.style.opacity = 0.5; // Existing style
+            const commentCell = row.insertCell(0);
+            const triggersCell = row.insertCell(1);
+            const contentCell = row.insertCell(2);
 
-                commentCell.textContent = match.comment;
-                triggersCell.textContent = match.triggers.join(', '); // Triggers are already stringified regex patterns if regex
-                contentCell.textContent = match.content;
+            commentCell.textContent = match.comment;
+            triggersCell.textContent = match.triggers.join(', '); // Triggers are already stringified regex patterns if regex
+            contentCell.textContent = match.content;
 
-                if (match.isRegex) { // Apply style for regex matches
-                    row.classList.add('regex-match');
-                }
+            if (match.isRegex) { // Apply style for regex matches
+                row.classList.add('regex-match');
+            }
 
-                if (index === highlightedRowIndex) {
-                    row.classList.add('highlighted');
-                }
-            });
-                    //Adjust Height based on total rows - Existing logic
-                    const textarea = document.getElementById('form_sheld');
-                    const textareaRect = textarea.getBoundingClientRect();
+            if (index === highlightedRowIndex) {
+                row.classList.add('highlighted');
+            }
+        });
 
+        // **Call positionLoreTips AFTER displaying tooltips to adjust for height**
+        positionLoreTips(); // Reposition tooltip after content is updated
 
-                    let CalcNeededHeight = Math.min(visibleMatches.length, settings.rowstoshow) // Use visibleMatches.length
-
-                    // Position LoreTips 80px above the textarea and same left alignment - Existing logic
-                    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 30) - 10) + 'px'; // Adjusted height calculation
-
-
-        } else {
-            hideTooltips();
-        }
+    } else {
+        hideTooltips();
     }
+}
+
 
     // Function to hide and clear tooltips (No changes)
     function hideTooltips() {
@@ -827,53 +821,50 @@ function AttachLoreMonitor() {
         }
     }
 
-    function positionLoreTips() {
-        const textarea = document.getElementById('form_sheld');
-        const loreTipsDiv = document.getElementById('LoreTips');
+function positionLoreTips() {
+    const textarea = document.getElementById('form_sheld');
+    const loreTipsDiv = document.getElementById('LoreTips');
 
-        if (!textarea || !loreTipsDiv) {
-            return; // Exit if elements not found
-        }
+    if (!textarea || !loreTipsDiv) {
+        return; // Exit if elements not found
+    }
 
-        const settings = getSettings();
-
-
-        const textareaRect = textarea.getBoundingClientRect();
+    const settings = getSettings();
+    const textareaRect = textarea.getBoundingClientRect();
 
 
-        let CalcNeededHeight = Math.min(document.getElementById('loretableslub')?.rows?.length || 0,settings.rowstoshow)
+    let topOffset = 0;
+    if (settings.tooltipPosition === "above") {
+        // **Corrected "above" position calculation**
+        const loreTipsHeight = loreTipsDiv.offsetHeight; // Get actual rendered height
+        topOffset = loreTipsHeight + 10; // Add margin
+    } else if (settings.tooltipPosition === "top") {
+        topOffset = -(loreTipsDiv.offsetHeight + 10) ; // Position at the top of the screen (adjust as needed) - needs proper height detection
+        if (loreTipsDiv.offsetHeight > 0 ) topOffset = 10; // if we have rows, move it down slightly from top
+         else topOffset = -10; // move it up slightly if no rows
+    }
 
 
-        let topOffset = 0;
-        if (settings.tooltipPosition === "above") {
-            topOffset = (CalcNeededHeight * 30) + 10; // Adjusted for 30px row height
-        } else if (settings.tooltipPosition === "top") {
-            topOffset = -(loreTipsDiv.offsetHeight + 10) ; // Position at the top of the screen (adjust as needed) - needs proper height detection
-            if (CalcNeededHeight > 0 ) topOffset = 10; // if we have rows, move it down slightly from top
-             else topOffset = -10; // move it up slightly if no rows
-        }
+    // Position LoreTips  based on settings
+    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - topOffset ) + 'px';
+    loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
 
-        // Position LoreTips  based on settings
-        loreTipsDiv.style.top = (textareaRect.top + window.scrollY - topOffset ) + 'px';
-        loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
+    // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
+    loreTipsDiv.style.width = textarea.offsetWidth - 32 + 'px';
+    loreTipsDiv.style.maxWidth = textarea.offsetWidth - 32 + 'px';
 
 
-        // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
-        loreTipsDiv.style.width = textarea.offsetWidth - 32 + 'px';
-        loreTipsDiv.style.maxWidth = textarea.offsetWidth - 32 + 'px';
+    // Set z-index for LoreTips to be higher than textarea
+    const textareaZIndex = window.getComputedStyle(textarea).zIndex;
+    let loreTipsZIndexValue = 1; // Default z-index for LoreTips
 
-
-        // Set z-index for LoreTips to be higher than textarea
-        const textareaZIndex = window.getComputedStyle(textarea).zIndex;
-        let loreTipsZIndexValue = 1; // Default z-index for LoreTips
-
-        if (textareaZIndex && textareaZIndex !== 'auto') {
-            loreTipsZIndexValue = parseInt(textareaZIndex, 10) + 1;
-        } else {
-            loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
-        }
-        loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
+    if (textareaZIndex && textareaZIndex !== 'auto') {
+        loreTipsZIndexValue = parseInt(textareaZIndex, 10) + 1;
+    } else {
+        loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
+    }
+    loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
 
 }
 
