@@ -490,7 +490,7 @@ function UpdateLoreTipStyle() {
             position: absolute;
             border: 1px solid #ccc;
             background-color: ${settings.backgroundColorOverride || 'var(--SmartThemeBlurTintColor)'};
-            max-height: ${settings.rowstoshow * 30}px; /* Adjusted row height to 30px */
+            max-height: ${settings.rowstoshow * 50}px; /* **Corrected to 50px row height** */
             overflow-y: auto;
             max-width:1200px;
             z-index: 200;
@@ -507,7 +507,7 @@ function UpdateLoreTipStyle() {
         }
         #LoreTips td {
             border: 0px solid;
-            max-height:30px;
+            max-height:50px; /* **Corrected to 50px row height** */
             padding: calc(var(--mainFontSize)* 1);
             text-align: left;
             word-break: break-word; /* Ensure long words wrap */
@@ -542,7 +542,6 @@ function UpdateLoreTipStyle() {
         }
     `;
 }
-
 
 function AttachLoreMonitor() {
 
