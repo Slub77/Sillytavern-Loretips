@@ -631,7 +631,7 @@ function AttachLoreMonitor() {
 
 
     // Function to handle input with debounce (Modified for Regex Check)
-    function handleInput() {
+   function handleInput() {
         const settings = getSettings(); // Get settings at the start of handleInput
         clearTimeout(timeoutId);
         clearTimeout(regexCheckTimeout); // Clear any pending regex check
@@ -664,8 +664,9 @@ function AttachLoreMonitor() {
 
         // Schedule a regex check after the input delay (or after a short interval)
         clearTimeout(regexCheckTimeout); // Clear previous timeout to avoid overlaps
+        if (settings.debugMode) console.log("LoreTips: handleInput - Setting up regexCheckTimeout"); // **NEW DEBUG LOG - Is handleInput even reaching this point?**
         regexCheckTimeout = setTimeout(() => {
-            if (settings.debugMode) console.log("LoreTips: regexCheckTimeout FIRING"); // **DEBUG LOG - Is the timer firing?**
+            if (settings.debugMode) console.log("LoreTips: regexCheckTimeout FIRING - About to call searchRegexTriggers"); // **DEBUG LOG - Timer is setting up, is it firing?**
             const currentFullInput = UserChatBox.value;
             const newRegexMatches = searchRegexTriggers(currentFullInput);
 
