@@ -323,29 +323,29 @@ function PreProcessLore() {
         entry.key.forEach(key => {
             let isIgnoredRegexTrigger = false;
 
-            // **Modified Regex Detection Logic:**
-            if (typeof key === 'string' && key.startsWith('/') && key.lastIndexOf('/') > 0) { // Check for lastIndexOf > 0
+            if (typeof key === 'string' && key.startsWith('/') && key.lastIndexOf('/') > 0) {
                 const lastSlashIndex = key.lastIndexOf('/');
-                const regexPatternString = key.slice(1, lastSlashIndex); // Extract pattern up to the last slash
-                const flags = key.slice(lastSlashIndex + 1); // Extract flags after the last slash
+                const regexPatternString = key.slice(1, lastSlashIndex);
+                const flags = key.slice(lastSlashIndex + 1);
 
                 if (settings.debugMode) {
                     console.log(`LoreTips: PreProcessLore - Potential Regex Key Found: ${key}`);
                     console.log(`LoreTips: PreProcessLore - Extracted Regex Pattern: ${regexPatternString}`);
-                    console.log(`LoreTips: PreProcessLore - Extracted Regex Flags: ${flags}`); // Log flags
+                    console.log(`LoreTips: PreProcessLore - Extracted Regex Flags: ${flags}`);
                 }
 
                 for (const ignoredRegex of ignoredRegexPatterns) {
-                    if (ignoredRegex.test(regexPatternString)) {
+                    // **Corrected Ignored Regex Check - Test against the entire 'key'**
+                    if (ignoredRegex.test(key)) {
                         isIgnoredRegexTrigger = true;
-                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Trigger Key "${key}" ignored because pattern "${regexPatternString}" matches ignored regex: ${ignoredRegex.toString()}`);
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Trigger Key "${key}" ignored because key itself matches ignored regex: ${ignoredRegex.toString()}`);
                         break;
                     }
                 }
 
                 if (!isIgnoredRegexTrigger) {
                     try {
-                        const regex = new RegExp(regexPatternString, flags); // Use extracted flags
+                        const regex = new RegExp(regexPatternString, flags);
                         regexKeys.push(regex);
                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled Successfully: ${key} with flags "${flags}"`);
                     } catch (e) {
@@ -358,8 +358,20 @@ function PreProcessLore() {
                     }
                 }
             } else if (typeof key === 'string') {
-                stringKeys.push(key);
-                if (settings.debugMode) console.log(`LoreTips: PreProcessLore - String Key Added: ${key} `);
+                // **String Key Ignored Regex Check - Apply to string keys as well if needed**
+                for (const ignoredRegex of ignoredRegexPatterns) {
+                    if (ignoredRegex.test(key)) {
+                        isIgnoredRegexTrigger = true; // Reuse the flag, but it's for string keys now
+                        if (settings.debugMode) console.log(`LoreTips: PreProcessLore - String Key "${key}" ignored because key itself matches ignored regex: ${ignoredRegex.toString()}`);
+                        break;
+                    }
+                }
+                if (!isIgnoredRegexTrigger) {
+                    stringKeys.push(key);
+                    if (settings.debugMode) console.log(`LoreTips: PreProcessLore - String Key Added: ${key} `);
+                }
+
+
             } else {
                 console.warn(`LoreTips: Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
                 if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Non-String Key Ignored: ${key} `);
