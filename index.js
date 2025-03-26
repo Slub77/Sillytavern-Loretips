@@ -402,7 +402,7 @@ function GenerateLoreTip() {
             position: absolute;
             border: 1px solid #ccc;
             background-color: ${settings.backgroundColorOverride || 'var(--SmartThemeBlurTintColor)'};
-            max-height: ${settings.rowstoshow * 30}px; /* Adjusted row height to 30px */
+            max-height: ${settings.rowstoshow * 50}px; /* Adjusted row height to 30px */
             overflow-y: auto;
             max-width:1200px;
             z-index: 200;
