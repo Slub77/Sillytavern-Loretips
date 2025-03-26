@@ -326,27 +326,25 @@ let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
                 let isIgnoredRegexTrigger = false; // Flag for ignoring THIS specific key
 
                 if (typeof key === 'string' && key.startsWith('/') && key.endsWith('/')) {
-                    // It's a regex-like string trigger
-                    const regexPatternString = key.slice(1, -1); // Remove delimiters to get the pattern
+                    // Assume regex if starts and ends with '/'
+                    const regexPattern = key.slice(1, -1); // Remove delimiters
 
-                    for (const ignoredRegex of ignoredRegexPatterns) {
-                        if (ignoredRegex.test(regexPatternString)) {
-                            isIgnoredRegexTrigger = true;
-                            if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Regex Trigger Key "${key}" ignored because pattern "${regexPatternString}" matches ignored regex: ${ignoredRegex.toString()}`);
-                            break; // No need to check other ignored regexes
-                        }
+                    if (settings.debugMode) { // Added debug logging here
+                        console.log(`LoreTips: PreProcessLore - Potential Regex Key Found: ${key}`);
+                        console.log(`LoreTips: PreProcessLore - Extracted Regex Pattern: ${regexPattern}`); // Log the pattern
                     }
 
-                    if (!isIgnoredRegexTrigger) { // Only process if NOT ignored
-                        try {
-                            const regex = new RegExp(regexPatternString, 'i'); // 'i' for case-insensitive, add flags as needed
-                            regexKeys.push(regex);
-                             if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled: ${key} `); //Debug Log
-                        } catch (e) {
-                            console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
-                            stringKeys.push(key); // Treat as string if regex is invalid
-                             if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `); //Debug Log
+                    try {
+                        const regex = new RegExp(regexPattern, 'i'); // 'i' for case-insensitive, add flags as needed
+                        regexKeys.push(regex);
+                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore -  Regex Pattern Compiled Successfully: ${key} `); //Debug Log
+                    } catch (e) {
+                        console.warn(`LoreTips: Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
+                        if (settings.debugMode) {
+                            console.log(`LoreTips: PreProcessLore - RegExp Error for key: ${key}`, e); // Log the error object
                         }
+                        stringKeys.push(key); // Treat as string if regex is invalid
+                         if (settings.debugMode) console.log(`LoreTips: PreProcessLore - Invalid Regex Pattern, treating as String: ${key} `); //Debug Log
                     }
                 } else if (typeof key === 'string') {
                     stringKeys.push(key); // Treat as string if not regex delimited
@@ -370,7 +368,6 @@ let ignoredRegexPatterns = []; // Array to store compiled ignored regex patterns
             console.log("LoreTips: Regex Lore Data Generated", regexLoreData);
         }
     }
-
 
 function GenerateLoreTip() {
 
