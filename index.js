@@ -630,11 +630,133 @@ function AttachLoreMonitor() {
     }
 
 
-    //Correct Event listeners - Trigger handleInput on input, mouseup and keyup for cursor move
-    UserChatBox.addEventListener('input', handleInput);
-    UserChatBox.addEventListener('mouseup', handleCursorMove);
-    UserChatBox.addEventListener('keyup', handleCursorMove);
+      // Function to handle input with debounce (Modified for Regex Check)
+    function handleInput() {
+        if (settings.debugMode) console.log("LoreTips: handleInput FUNCTION CALLED"); // **NEW DEBUG LOG - Is handleInput being called at all?**
 
+        const settings = getSettings(); // Get settings at the start of handleInput
+        clearTimeout(timeoutId);
+        clearTimeout(regexCheckTimeout); // Clear any pending regex check
+
+        timeoutId = setTimeout(() => {
+            const currentInputValue = getCurrentInputString();
+            if (currentInputValue !== currentInputString || UserChatBox.value !== lastInputValue) {
+                currentInputString = currentInputValue;
+                lastInputValue = UserChatBox.value;
+
+                let stringMatches = [];
+                if (potentialMatchesMemory.length > 0) {
+                    potentialMatchesMemory = filterPotentialMatches(currentInputString, potentialMatchesMemory);
+                    stringMatches = potentialMatchesMemory;
+                } else {
+                    stringMatches = searchStringTriggers(currentInputString);
+                    potentialMatchesMemory = stringMatches;
+                }
+
+                // No immediate regex search here - regex is checked on interval now
+                displayTooltips(stringMatches, activeRegexMatches); // Display string and active regex matches
+                resetHighlight();
+
+                if (stringMatches.length === 0) {
+                    potentialMatchesMemory = [];
+                }
+            }
+        }, settings.delay); // Use delay from settings
+
+
+        // Schedule a regex check after the input delay (or after a short interval)
+        clearTimeout(regexCheckTimeout); // Clear previous timeout to avoid overlaps
+        if (settings.debugMode) console.log("LoreTips: handleInput - Setting up regexCheckTimeout");
+        regexCheckTimeout = setTimeout(() => {
+            if (settings.debugMode) console.log("LoreTips: regexCheckTimeout FIRING - About to call searchRegexTriggers");
+            const currentFullInput = UserChatBox.value;
+            const newRegexMatches = searchRegexTriggers(currentFullInput);
+
+            // Basic logic: Replace activeRegexMatches with new matches on each interval
+            activeRegexMatches = newRegexMatches;
+
+             // Re-display tooltips to update regex matches
+            const currentStringMatches = potentialMatchesMemory; // Get current string matches
+            displayTooltips(currentStringMatches, activeRegexMatches);
+            resetHighlight();
+
+        }, regexCheckInterval); // Delay for regex check
+    }
+
+    // Function to reset highlight to the top row if list changes (No changes)
+    function resetHighlight() {
+        const highlightedRow = loreTipsTableBody.querySelector('tr.highlighted');
+        if (highlightedRow) {
+            highlightedRow.classList.remove('highlighted');
+        }
+        highlightedRowIndex = 0;
+        if (loreTipsTableBody.rows.length > 0) {
+            loreTipsTableBody.rows[highlightedRowIndex].classList.add('highlighted');
+        }
+    }
+
+
+    function navigateTooltips(direction) {
+        if (visibleMatches.length === 0) return;
+
+        const rows = loreTipsTableBody.rows;
+        if (rows.length === 0) return;
+
+        rows[highlightedRowIndex].classList.remove('highlighted'); // Remove current highlight
+        highlightedRowIndex += direction;
+
+
+        if (highlightedRowIndex < 0) {
+            highlightedRowIndex = rows.length - 1; // Wrap to bottom
+        } else if (highlightedRowIndex >= rows.length) {
+            highlightedRowIndex = 0; // Wrap to top
+        }
+
+        rows[highlightedRowIndex].classList.add('highlighted'); // Add new highlight
+
+        // Scroll into view if needed (optional, but good UX)
+        rows[highlightedRowIndex].scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'start'
+        });
+    }
+
+
+    // --- Cursor position change or re-focus logic --- (No changes)
+    UserChatBox.addEventListener('mouseup', handleCursorMove); // Mouse click to move cursor
+    UserChatBox.addEventListener('keyup', handleCursorMove);   // Arrow keys to move cursor
+    UserChatBox.addEventListener('input', handleInput);
+
+    function handleCursorMove() {
+        if (UserChatBox === document.activeElement) { // Only if textarea is focused
+            const currentInputValue = getCurrentInputString();
+            if (currentInputValue) {
+                if (currentInputValue !== currentInputString) {
+                    currentInputString = currentInputValue;
+
+                    let stringMatches = [];
+                    if (potentialMatchesMemory.length > 0) {
+                        potentialMatchesMemory = filterPotentialMatches(currentInputString, potentialMatchesMemory);
+                        stringMatches = potentialMatchesMemory;
+                    } else {
+                        stringMatches = searchStringTriggers(currentInputString);
+                        potentialMatchesMemory = stringMatches;
+                    }
+                     displayTooltips(stringMatches, activeRegexMatches); // Display string and active regex matches
+                    resetHighlight();
+                    if (stringMatches.length === 0) {
+                        potentialMatchesMemory = [];
+                    }
+                }
+            } else {
+                hideTooltips(); // Hide if no word under cursor
+                currentInputString = '';
+                potentialMatchesMemory = [];
+                activeRegexMatches = []; // Clear regex matches on no word under cursor
+            }
+        }
+    }
 
     function positionLoreTips() {
         const textarea = document.getElementById('form_sheld');
