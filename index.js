@@ -69,7 +69,6 @@ function addExtensionSettings(settings) {
         return;
     }
 
-    
 
     const inlineDrawer = document.createElement('div');
     inlineDrawer.classList.add('inline-drawer');
@@ -131,7 +130,7 @@ function addExtensionSettings(settings) {
     LoreRowsToShowLabel.innerHTML = "Rows to show"
     LoreRowsToShowLabel.style.padding = "3px"
     LoreRowsToShowLabel.style.fontWeight = "bold"
-    
+
     const LoreRowsToShow = document.createElement(`input`);
     LoreRowsToShow.type = 'number';
     LoreRowsToShow.value  = settings.rowstoshow;
@@ -139,8 +138,8 @@ function addExtensionSettings(settings) {
     LoreRowsToShow.max  = 20;
     LoreRowsToShow.step  = 1;
     LoreRowsToShow.classList.add('text_pole')
-    
-    
+
+
     LoreRowsToShow.addEventListener('change', () => {
 
         if(!isNaN(LoreRowsToShow.value)) {
@@ -149,35 +148,71 @@ function addExtensionSettings(settings) {
             ReBuildLore();
         }
     });
-    
+
     inlineDrawerContent2.append(LoreRowsToShowLabel, LoreRowsToShow);
     inlineDrawer.append(inlineDrawerContent2);
 
 
-    
 
-    
 
- 
+
 }
 
 
 
 async function LoreTipGetLatest() {
     CachedLore = await getSortedEntries();
+    PreProcessLore(); // Preprocess lore data after fetching latest
     ////console.log(CachedLore);
     return;
 }
 
 var CachedLore = []
+let stringLoreData = []; // Data for string-based triggers (moved to module scope)
+let regexLoreData = [];   // Data for regex triggers   (moved to module scope)
+
+
+    // Pre-process lore data to separate string and regex triggers (Moved outside GenerateLoreTip to module scope)
+    function PreProcessLore() {
+        stringLoreData = []; // Clear existing data on re-process
+        regexLoreData = [];
+        CachedLore.forEach(entry => {
+            const stringKeys = [];
+            const regexKeys = [];
+
+            entry.key.forEach(key => {
+                if (typeof key === 'string' && key.startsWith('/') && key.endsWith('/')) {
+                    // Assume regex if starts and ends with '/'
+                    const regexPattern = key.slice(1, -1); // Remove delimiters
+                    try {
+                        const regex = new RegExp(regexPattern, 'i'); // 'i' for case-insensitive, add flags as needed
+                        regexKeys.push(regex);
+                    } catch (e) {
+                        console.warn(`Invalid regex pattern: ${key} in entry: ${entry.comment}. Treating as string.`);
+                        stringKeys.push(key); // Treat as string if regex is invalid
+                    }
+                } else if (typeof key === 'string') {
+                    stringKeys.push(key); // Treat as string if not regex delimited
+                } else {
+                    console.warn(`Non-string key encountered in entry: ${entry.comment}. Ignoring key:`, key);
+                }
+            });
+
+            if (regexKeys.length > 0) {
+                regexLoreData.push({...entry, key: regexKeys}); // Create new entry with regex keys
+            }
+            if (stringKeys.length > 0) {
+                 stringLoreData.push({...entry, key: stringKeys}); // Create new entry with string keys
+            }
+        });
+    }
 
 
 function GenerateLoreTip() {
 
     const settings = getSettings();
 
-   
-    
+
    // --- Create HTML Elements Dynamically ---
     const style = document.createElement('style');
     style.id = "LoretipCss";
@@ -196,7 +231,7 @@ function GenerateLoreTip() {
 
         #LoreTips:hover {
             opacity:1;
-            
+
         }
         #LoreTips table {
             width: 100%;
@@ -225,13 +260,17 @@ function GenerateLoreTip() {
         #LoreTips.ctrl-pressed {
         opacity: 1;
         }
-        
-        
+
+
         #loreTipsTableBody tr:hover {
             background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlight on hover */
         }
         #loreTipsTableBody tr.highlighted {
             background-color: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, var(--SmartThemeBorderColor) 5%); /* Highlighted row */
+        }
+        .regex-match { /* Style for regex match rows, can customize */
+            font-style: italic;
+            color: darkgray;
         }
     `;
     document.head.appendChild(style);
@@ -243,7 +282,7 @@ function GenerateLoreTip() {
     const loreTipsTable = document.createElement('table');
     loreTipsTable.id = "loretableslub"
     loreTipsDiv.appendChild(loreTipsTable);
-    
+
 
     const tableHead = document.createElement('thead');
     loreTipsTable.appendChild(tableHead);
@@ -268,109 +307,140 @@ function AttachLoreMonitor() {
     const loreTipsDiv = document.getElementById('LoreTips');
     const loreTipsTableBody = document.getElementById('loreTipsTableBody');
 
-    // Your data array (provided in the prompt)
+    // Your data array (provided in the prompt) - now using preprocessed data
     const loreData = CachedLore;
 
 
     let timeoutId;
-    let currentWord = '';
+    let currentInputString = ''; // Renamed from currentWord
     let lastInputValue = '';
     let highlightedRowIndex = 0;
     let visibleMatches = [];
+    let potentialMatchesMemory = [];
+    let activeRegexMatches = []; // Store currently active regex matches
+    let regexCheckTimeout; // Timer for regex checks
+    const regexCheckInterval = 1000; // Check regex every 1 second (adjust as needed)
 
-    // Function to get the current word under the cursor
-    function getCurrentWord() {
+
+    // Function to get the current input string since last space (No changes)
+    function getCurrentInputString() {
         const inputValue = UserChatBox.value;
         const cursorPosition = UserChatBox.selectionStart;
-        let wordStart = 0;
-        let wordEnd = inputValue.length;
-
-        // Find start of the word
+        let stringStart = 0;
         for (let i = cursorPosition - 1; i >= 0; i--) {
             if (/\s/.test(inputValue[i])) {
-                wordStart = i + 1;
+                stringStart = i + 1;
                 break;
             }
         }
-
-        // Find end of the word
-        for (let i = cursorPosition; i < inputValue.length; i++) {
-            if (/\s/.test(inputValue[i])) {
-                wordEnd = i;
-                break;
-            }
-        }
-        return inputValue.substring(wordStart, wordEnd);
+        return inputValue.substring(stringStart, cursorPosition);
     }
 
 
-    // Function to search for triggers in loreData
-    function searchTriggers(word) {
-        if (!word) return [];
-        const lowerWord = word.toLowerCase();
-        return loreData.reduce((matches, entry) => {
+    // Function to search for STRING triggers (Optimized for strings only)
+    function searchStringTriggers(inputString) {
+        if (!inputString) return [];
+        const lowerInput = inputString.toLowerCase();
+        return stringLoreData.reduce((matches, entry) => { // Use stringLoreData here
             if(entry.disable) return matches;
-            for (const key of entry.key) {
-                if (typeof key === 'string') { // Handle string keys
-                    const lowerKey = key.toLowerCase();
-                    if (lowerKey.includes(lowerWord)) {
-                        matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content, truematch:lowerKey == lowerWord });
-                        return matches; // Return after first match in keys to avoid duplicates from same entry
-                    }
-                } else if (key.test(new RegExp(word, "g"))) { // Handle regex keys (if any in future, currently not used for triggers)
-                    
-                        matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content });
-                        return matches; // Return after first match in keys
-                    }
-                
+            for (const key of entry.key) { // entry.key is now always string[]
+                const lowerKey = key.toLowerCase();
+                if (lowerKey.includes(lowerInput)) {
+                    matches.push({ comment: entry.comment, triggers: entry.key, content: entry.content, entry: entry, isRegex: false }); // isRegex flag
+                    return matches;
+                }
             }
             return matches;
         }, []);
     }
 
 
-    // Function to display tooltips
-    function displayTooltips(matches) {
-        visibleMatches = matches;
-        loreTipsTableBody.innerHTML = ''; // Clear previous results
-        highlightedRowIndex = 0; // Reset highlight
+    // Function to search for REGEX triggers (Separate slower check)
+    function searchRegexTriggers(fullInput) { // Now takes the full input string
+        if (!fullInput) return [];
+        return regexLoreData.reduce((matches, entry) => { // Use regexLoreData here
+            if(entry.disable) return matches;
+            for (const key of entry.key) { // entry.key is now always RegExp[]
+                if (key instanceof RegExp) { // Explicitly check for RegExp object
+                    if (key.test(fullInput)) { // Test against the FULL input
+                        matches.push({ comment: entry.comment, triggers: entry.key.map(r => r.toString()), content: entry.content, entry: entry, isRegex: true }); // isRegex flag, store regex as string for display
+                        return matches;
+                    }
+                }
+            }
+            return matches;
+        }, []);
+    }
 
-        if (matches.length > 0) {
+
+    // Function to filter potential matches from memory (No changes needed, but good to review regex part)
+    function filterPotentialMatches(inputString, memory) {
+        if (!inputString || memory.length === 0) return [];
+        const lowerInput = inputString.toLowerCase();
+        return memory.filter(memoEntry => {
+            for (const key of memoEntry.entry.key) {
+                if (typeof key === 'string') { // Still need to handle string keys in memory
+                    const lowerKey = key.toLowerCase();
+                    if (lowerKey.startsWith(lowerInput)) {
+                        return true;
+                    }
+                } else if (key instanceof RegExp) { // Keep regex mem entries for now
+                    if (key.test(inputString)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+
+    // Function to display tooltips (Modified to handle regex matches) (No changes needed)
+    function displayTooltips(stringMatches, regexMatches) { // Takes both types of matches
+        visibleMatches = [...stringMatches, ...regexMatches]; // Combine both match types
+        loreTipsTableBody.innerHTML = '';
+        highlightedRowIndex = 0;
+
+        if (visibleMatches.length > 0) {
             loreTipsDiv.style.display = 'block';
 
-            matches.forEach((match, index) => {
+            visibleMatches.forEach((match, index) => {
                 const row = loreTipsTableBody.insertRow();
-                if(match.truematch) row.style.backgroundColor = "var(--tertiaryBg)";
-                if(!match.truematch) row.style.opacity = 0.5;
+                if(match.truematch) row.style.backgroundColor = "var(--tertiaryBg)"; // Existing style
+                if(!match.truematch) row.style.opacity = 0.5; // Existing style
                 const commentCell = row.insertCell(0);
                 const triggersCell = row.insertCell(1);
                 const contentCell = row.insertCell(2);
 
                 commentCell.textContent = match.comment;
-                triggersCell.textContent = match.triggers.join(', ');
+                triggersCell.textContent = match.triggers.join(', '); // Triggers are already stringified regex patterns if regex
                 contentCell.textContent = match.content;
 
+                if (match.isRegex) { // Apply style for regex matches
+                    row.classList.add('regex-match');
+                }
+
                 if (index === highlightedRowIndex) {
-                    row.classList.add('highlighted'); // Highlight first row initially
+                    row.classList.add('highlighted');
                 }
             });
-                    //Adjust Height based on total rows
+                    //Adjust Height based on total rows - Existing logic
                     const textarea = document.getElementById('form_sheld');
                     const textareaRect = textarea.getBoundingClientRect();
                     const settings = getSettings();
-            
-                    let CalcNeededHeight = Math.min(matches.length, settings.rowstoshow)
-                
-                    // Position LoreTips 80px above the textarea and same left alignment
-                    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
+
+                    let CalcNeededHeight = Math.min(visibleMatches.length, settings.rowstoshow) // Use visibleMatches.length
+
+                    // Position LoreTips 80px above the textarea and same left alignment - Existing logic
+                    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 30) - 10) + 'px'; // Adjusted height calculation
                     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
-            
+
         } else {
-            hideTooltips(); // Hide if no matches
+            hideTooltips();
         }
     }
 
-    // Function to hide and clear tooltips
+    // Function to hide and clear tooltips (No changes)
     function hideTooltips() {
         loreTipsDiv.style.display = 'none';
         loreTipsTableBody.innerHTML = '';
@@ -379,24 +449,54 @@ function AttachLoreMonitor() {
     }
 
 
-    // Function to handle input with debounce
+    // Function to handle input with debounce (Modified for Regex Check)
     function handleInput() {
         clearTimeout(timeoutId);
- //console.log("Slub: Searching>")
-        
+        clearTimeout(regexCheckTimeout); // Clear any pending regex check
+
         timeoutId = setTimeout(() => {
-            //console.log("Slub: Searching")
-            const currentInputWord = getCurrentWord();
-            if (currentInputWord !== currentWord || UserChatBox.value !== lastInputValue) {
-                currentWord = currentInputWord;
+            const currentInputValue = getCurrentInputString();
+            if (currentInputValue !== currentInputString || UserChatBox.value !== lastInputValue) {
+                currentInputString = currentInputValue;
                 lastInputValue = UserChatBox.value;
-                const matches = searchTriggers(currentWord);
-                displayTooltips(matches);
+
+                let stringMatches = [];
+                if (potentialMatchesMemory.length > 0) {
+                    potentialMatchesMemory = filterPotentialMatches(currentInputString, potentialMatchesMemory);
+                    stringMatches = potentialMatchesMemory;
+                } else {
+                    stringMatches = searchStringTriggers(currentInputString);
+                    potentialMatchesMemory = stringMatches;
+                }
+
+                // No immediate regex search here - regex is checked on interval now
+                displayTooltips(stringMatches, activeRegexMatches); // Display string and active regex matches
+                resetHighlight();
+
+                if (stringMatches.length === 0) {
+                    potentialMatchesMemory = [];
+                }
             }
-        }, 200);
+        }, settings.delay); // Use delay from settings
+
+
+        // Schedule a regex check after the input delay (or after a short interval)
+        regexCheckTimeout = setTimeout(() => {
+            const currentFullInput = UserChatBox.value;
+            const newRegexMatches = searchRegexTriggers(currentFullInput);
+
+            // Basic logic: Replace activeRegexMatches with new matches on each interval
+            activeRegexMatches = newRegexMatches;
+
+             // Re-display tooltips to update regex matches
+            const currentStringMatches = potentialMatchesMemory; // Get current string matches
+            displayTooltips(currentStringMatches, activeRegexMatches);
+            resetHighlight();
+
+        }, regexCheckInterval); // Delay for regex check
     }
 
-    // Function to reset highlight to the top row if list changes
+    // Function to reset highlight to the top row if list changes (No changes)
     function resetHighlight() {
         const highlightedRow = loreTipsTableBody.querySelector('tr.highlighted');
         if (highlightedRow) {
@@ -407,48 +507,6 @@ function AttachLoreMonitor() {
             loreTipsTableBody.rows[highlightedRowIndex].classList.add('highlighted');
         }
     }
-
-
-    // Event listeners
-    UserChatBox.addEventListener('focus', function() {
-        // Check word on focus if needed (implementation for cursor move focus below covers this)
-    });
-
-    UserChatBox.addEventListener('blur', function() {
-        hideTooltips();
-        //console.log("Slub: DeFocus")
-        currentWord = ''; // Reset current word on blur
-    });
-
-    UserChatBox.addEventListener('input', handleInput);
-
-
-    UserChatBox.addEventListener('keydown', function(event) {
-        if (event.key === ' ' || event.key === 'Spacebar') { // Handle space key to hide tooltip
-            hideTooltips();
-            //console.log("Slub: New Word")
-            currentWord = ''; // Reset current word on space
-        } else if (event.ctrlKey && (event.key === 'ArrowDown' || event.key === 'Down')) {
-            event.preventDefault(); // Prevent default scroll
-            navigateTooltips(1); // 1 for down
-        } else if (event.ctrlKey && (event.key === 'ArrowUp' || event.key === 'Up')) {
-            event.preventDefault(); // Prevent default scroll
-            navigateTooltips(-1); // -1 for up
-        }
-    });
-
-     document.addEventListener('keydown', function(event) {
-        if ((event.key === 'Control' || event.key === 'ControlLeft' || event.key === 'ControlRight') && UserChatBox === document.activeElement) { // Check for CTRL and textarea focus
-            loreTipsDiv.classList.add('ctrl-pressed');
-        }
-        // ... (rest of your keydown event listener code) ...
-    });
-
-    document.addEventListener('keyup', function(event) {
-        if (event.key === 'Control' || event.key === 'ControlLeft' || event.key === 'ControlRight') {
-            loreTipsDiv.classList.remove('ctrl-pressed');
-        }
-    });
 
 
     function navigateTooltips(direction) {
@@ -478,23 +536,36 @@ function AttachLoreMonitor() {
     }
 
 
-    // --- Cursor position change or re-focus logic ---
+    // --- Cursor position change or re-focus logic --- (No changes)
     UserChatBox.addEventListener('mouseup', handleCursorMove); // Mouse click to move cursor
     UserChatBox.addEventListener('keyup', handleCursorMove);   // Arrow keys to move cursor
 
     function handleCursorMove() {
         if (UserChatBox === document.activeElement) { // Only if textarea is focused
-            const currentInputWord = getCurrentWord();
-            if (currentInputWord) {
-                if (currentInputWord !== currentWord) {
-                    currentWord = currentInputWord;
-                    const matches = searchTriggers(currentWord);
-                    displayTooltips(matches);
-                    resetHighlight(); // Reset highlight when list updates due to cursor move
+            const currentInputValue = getCurrentInputString();
+            if (currentInputValue) {
+                if (currentInputValue !== currentInputString) {
+                    currentInputString = currentInputValue;
+
+                    let stringMatches = [];
+                    if (potentialMatchesMemory.length > 0) {
+                        potentialMatchesMemory = filterPotentialMatches(currentInputString, potentialMatchesMemory);
+                        stringMatches = potentialMatchesMemory;
+                    } else {
+                        stringMatches = searchStringTriggers(currentInputString);
+                        potentialMatchesMemory = stringMatches;
+                    }
+                     displayTooltips(stringMatches, activeRegexMatches); // Display string and active regex matches
+                    resetHighlight();
+                    if (stringMatches.length === 0) {
+                        potentialMatchesMemory = [];
+                    }
                 }
             } else {
                 hideTooltips(); // Hide if no word under cursor
-                currentWord = '';
+                currentInputString = '';
+                potentialMatchesMemory = [];
+                activeRegexMatches = []; // Clear regex matches on no word under cursor
             }
         }
     }
@@ -509,20 +580,19 @@ function AttachLoreMonitor() {
 
     const settings = getSettings();
 
-  
 
     const textareaRect = textarea.getBoundingClientRect();
 
     let CalcNeededHeight = Math.min(document.getElementById('loretableslub').rows.length,settings.rowstoshow)
 
     // Position LoreTips 80px above the textarea and same left alignment
-    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 60) + 10) + 'px'; // Add scrollY for absolute positioning in document
+    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - (CalcNeededHeight * 30) - 10) + 'px'; // Adjusted height calculation
     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
     // Ensure LoreTips width matches textarea width (already handled, but good to keep in mind)
     loreTipsDiv.style.width = textarea.offsetWidth - 32 + 'px';
     loreTipsDiv.style.maxWidth = textarea.offsetWidth - 32 + 'px';
-        
+
 
     // Set z-index for LoreTips to be higher than textarea
     const textareaZIndex = window.getComputedStyle(textarea).zIndex;
@@ -534,7 +604,7 @@ function AttachLoreMonitor() {
         loreTipsZIndexValue = 2; // If textarea has no z-index, set LoreTips to 2 (assuming textarea is default 0 or 1)
     }
     loreTipsDiv.style.zIndex = loreTipsZIndexValue.toString();
-        
+
 }
 
 // Call positionLoreTips initially and on window resize (and potentially on scroll if layout is affected)
@@ -549,7 +619,7 @@ async function ReBuildLore() {
 if(document.getElementById("LoreTips") != undefined) { //we already have the loretip
 
     document.getElementById("LoreTips").remove();
-    document.getElementById("LoretipCss").remove();  
+    document.getElementById("LoretipCss").remove();
     //console.log("Slub: Refreshed CSS/LoreTip");
 }
 
@@ -568,12 +638,15 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
     await LoreTipGetLatest();
     await ReBuildLore();
 
-            
+
     const UpdatedWorldInfo = [
         event_types.WORLDINFO_UPDATED,
         event_types.WORLDINFO_SETTINGS_UPDATED,
     ];
 
-    UpdatedWorldInfo.forEach(e => eventSource.on(e, LoreTipGetLatest));
-    
+    UpdatedWorldInfo.forEach(e => eventSource.on(e, async () => {
+        await LoreTipGetLatest(); //Re-fetch lore data
+        await ReBuildLore(); // Rebuild LoreTips UI and attach monitor with new data
+    }));
+
 })();
