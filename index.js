@@ -265,6 +265,28 @@ function addExtensionSettings(settings) {
     ignoredRegexLabel.append(ignoredRegexSpan, ignoredRegexInput);
     inlineDrawerContent.append(ignoredRegexLabel);
 
+ // **New: Rows to Show Setting**
+    const rowsToShowLabel = document.createElement('label');
+    rowsToShowLabel.classList.add('labeled_input');
+    const rowsToShowSpan = document.createElement('span');
+    rowsToShowSpan.textContent = t`Rows to Show (Max):`;
+    const rowsToShowInput = document.createElement('input');
+    rowsToShowInput.type = 'number';
+    rowsToShowInput.min = 1;
+    rowsToShowInput.max = 10; // Or a reasonable max value
+    rowsToShowInput.value = settings.rowstoshow;
+    rowsToShowInput.classList.add('text_pole');
+    rowsToShowInput.addEventListener('change', () => {
+        settings.rowstoshow = parseInt(rowsToShowInput.value, 10);
+        if (settings.rowstoshow < 1) settings.rowstoshow = 1; // Ensure min value
+        if (settings.rowstoshow > 10) settings.rowstoshow = 10; // Ensure max value (optional)
+        saveSettingsDebounced();
+        UpdateLoreTipStyle(); // Update style directly
+        positionLoreTips(); // Reposition if needed due to height change
+    });
+    rowsToShowLabel.append(rowsToShowSpan, rowsToShowInput);
+    inlineDrawerContent.append(rowsToShowLabel);
+    
     // Reset to Defaults Button
     const resetDefaultsButton = document.createElement('input');
     resetDefaultsButton.type = 'button';
@@ -885,6 +907,43 @@ if(document.getElementById("LoreTips") != undefined) { //we already have the lor
     addExtensionSettings(settings);
     await LoreTipGetLatest();
     await ReBuildLore();
+
+
+       // **Create Lore Tips Toggle in Extensions Menu**
+     const extensionsMenu = document.getElementById('extensionsMenu');
+    if (extensionsMenu) {
+        const loreTipsToggleContainer = document.createElement('div');
+        loreTipsToggleContainer.classList.add('extension_container', 'interactable');
+        loreTipsToggleContainer.id = 'loretips_toggle_container';
+        loreTipsToggleContainer.tabIndex = 0;
+
+        const loreTipsToggleButton = document.createElement('div');
+        loreTipsToggleButton.id = 'toggleLoreTipsButton';
+        loreTipsToggleButton.classList.add('list-group-item', 'flex-container', 'flexGap5', 'interactable');
+        loreTipsToggleButton.tabIndex = 0;
+        loreTipsToggleButton.title = t`Toggle Lore Tips`; // Add translation
+
+        const icon = document.createElement('i');
+        icon.classList.add('fa-solid', 'fa-book-open'); // Choose an appropriate icon
+
+        const span = document.createElement('span');
+        span.textContent = t`Lore Tips`;
+
+        loreTipsToggleButton.append(icon, span);
+        loreTipsToggleContainer.append(loreTipsToggleButton);
+        extensionsMenu.insertBefore(loreTipsToggleContainer, extensionsMenu.firstChild); // Add to the top of the menu
+
+        // Set initial state based on settings
+        loreTipsToggleContainer.classList.toggle('extension-disabled', !settings.enabled); // Use 'extension-disabled' class for visual toggle
+
+        // Toggle functionality
+        loreTipsToggleContainer.addEventListener('click', () => {
+            settings.enabled = !settings.enabled; // Toggle the setting
+            saveSettingsDebounced();
+            ReBuildLore(); // Rebuild Lore Tips UI
+            loreTipsToggleContainer.classList.toggle('extension-disabled', !settings.enabled); // Update toggle visual state
+        });
+    }
 
 
     const UpdatedWorldInfo = [
