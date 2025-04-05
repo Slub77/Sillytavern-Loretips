@@ -7,9 +7,12 @@ Supports Regex at a slower rate (Configrable).
 ## WIP
 Casual extention, reach out to me on Discord (Slub) for Q&A
 
-# Known Issue
-Position: Top
-Doesn't work with many Custom themes. 
+# Example
+
+
+![Alt Text](https://github.com/Slub77/Sillytavern-Loretips/blob/main/ezgif-7bd8e8cb63aec3.gif)
+
+
 
 ## License
 
