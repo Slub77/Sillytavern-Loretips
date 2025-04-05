@@ -837,15 +837,14 @@ function positionLoreTips() {
         // **Corrected "above" position calculation**
         const loreTipsHeight = loreTipsDiv.offsetHeight; // Get actual rendered height
         topOffset = loreTipsHeight + 10; // Add margin
+        loreTipsDiv.style.top = (textareaRect.top + window.scrollY - topOffset ) + 'px';
     } else if (settings.tooltipPosition === "top") {
-        topOffset = -(loreTipsDiv.offsetHeight + 10) ; // Position at the top of the screen (adjust as needed) - needs proper height detection
-        if (loreTipsDiv.offsetHeight > 0 ) topOffset = 10; // if we have rows, move it down slightly from top
-         else topOffset = -10; // move it up slightly if no rows
+         loreTipsDiv.style.top = 10+ 'px';
     }
 
 
     // Position LoreTips  based on settings
-    loreTipsDiv.style.top = (textareaRect.top + window.scrollY - topOffset ) + 'px';
+   
     loreTipsDiv.style.left = textareaRect.left + 16 + 'px';
 
 
